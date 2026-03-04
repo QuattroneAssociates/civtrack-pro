@@ -11,8 +11,6 @@ import {
   HardHat,
   PanelLeftClose,
   PanelLeftOpen,
-  Search,
-  X,
   ChevronRight,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -32,7 +30,6 @@ const navItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [location, navigate] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: tasks = [] } = useQuery<Task[]>({ queryKey: ["/api/tasks"] });
   const { data: permits = [] } = useQuery<Permit[]>({ queryKey: ["/api/permits"] });
@@ -52,13 +49,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (p.applicationStatus === "Fees Posted - Unpaid") return true;
     return false;
   }).length;
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    if (e.target.value.trim() && location !== "/projects") {
-      navigate("/projects");
-    }
-  };
 
   const getBadge = (path: string) => {
     if (path === "/tasks") return activeTasks || undefined;
@@ -161,31 +151,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               )}
             </button>
 
-            {location !== "/" && (
-              <div className="relative flex-1 max-w-md">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  size={14}
-                />
-                <input
-                  type="text"
-                  placeholder="Search projects, permits, addresses..."
-                  value={searchQuery}
-                  onChange={handleSearch}
-                  className="w-full pl-9 pr-8 py-2 bg-muted/50 border border-transparent rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
-                  data-testid="input-search"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive"
-                    data-testid="button-clear-search"
-                  >
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         </header>
 
