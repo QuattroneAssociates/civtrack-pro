@@ -61,10 +61,14 @@ Full-stack civil engineering project management application migrated from a Goog
 - Write routes require specific roles (403 without)
 
 ## Styling
-- Custom sidebar: `bg-[#0c0054]` with amber active states
+- Warm cream/tan palette inspired by mockup design
+- Background: warm cream `hsl(37 30% 91%)`, Cards: off-white `hsl(40 33% 96%)`
+- Sidebar: dark slate blue `hsl(213 30% 18%)` with white/opacity text
+- Primary: dark navy `hsl(213 30% 22%)`, Accent: dusty rose `#c4917a`, steel blue `#8fa5b8`
+- Login page: `bg-[#263042]` with matching button colors
+- Dashboard: stat cards with circular icons + accent bars, Recently Submitted permits list, Deadline Radar mini calendar widget
 - Uses shadcn elevation system (`hover-elevate`)
 - Font: Open Sans
-- Primary color: blue (217 91% 60%)
 
 ## Secrets
 - `DATABASE_URL` — PostgreSQL connection

@@ -69,19 +69,19 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[#0c0054] px-4"
+      className="min-h-screen flex items-center justify-center bg-[#263042] px-4"
       data-testid="login-page"
     >
       <Card className="w-full max-w-md bg-white border-0 shadow-2xl">
         <CardContent className="pt-10 pb-8 px-8">
           <div className="flex flex-col items-center mb-8">
-            <div className="w-14 h-14 rounded-xl bg-[#0c0054] flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-xl bg-[#263042] flex items-center justify-center mb-4">
               <HardHat size={28} className="text-amber-400" />
             </div>
-            <h1 className="text-xl font-black text-[#0c0054] tracking-tight" data-testid="text-app-title">
+            <h1 className="text-xl font-black text-[#263042] tracking-tight" data-testid="text-app-title">
               CivTrack Pro
             </h1>
-            <p className="text-[10px] font-bold text-[#0c0054]/40 uppercase tracking-[0.25em] mt-1">
+            <p className="text-[10px] font-bold text-[#263042]/40 uppercase tracking-[0.25em] mt-1">
               Quattrone & Associates, Inc.
             </p>
           </div>
@@ -108,7 +108,7 @@ export default function LoginPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full h-11 bg-[#0c0054] hover:bg-[#1a0a6e] text-white font-bold text-sm"
+                className="w-full h-11 bg-[#263042] hover:bg-[#344a60] text-white font-bold text-sm"
                 disabled={isSubmitting || !email.trim()}
                 data-testid="button-send-code"
               >
@@ -128,14 +128,14 @@ export default function LoginPage() {
               {returnedCode && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center" data-testid="display-code">
                   <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2">Your Access Code</p>
-                  <p className="text-3xl font-black tracking-[0.3em] text-[#0c0054]">{returnedCode}</p>
+                  <p className="text-3xl font-black tracking-[0.3em] text-[#263042]">{returnedCode}</p>
                 </div>
               )}
               <div className="text-center mb-2">
                 <p className="text-sm text-gray-600">
                   Enter the code to sign in as
                 </p>
-                <p className="text-sm font-bold text-[#0c0054]" data-testid="text-sent-email">
+                <p className="text-sm font-bold text-[#263042]" data-testid="text-sent-email">
                   {email}
                 </p>
               </div>
@@ -160,7 +160,7 @@ export default function LoginPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full h-11 bg-[#0c0054] hover:bg-[#1a0a6e] text-white font-bold text-sm"
+                className="w-full h-11 bg-[#263042] hover:bg-[#344a60] text-white font-bold text-sm"
                 disabled={isSubmitting || code.length < 6}
                 data-testid="button-verify-code"
               >
@@ -177,7 +177,7 @@ export default function LoginPage() {
                     setCode("");
                     setReturnedCode(null);
                   }}
-                  className="flex items-center gap-1 text-gray-500 hover:text-[#0c0054] transition-colors"
+                  className="flex items-center gap-1 text-gray-500 hover:text-[#263042] transition-colors"
                   data-testid="button-back"
                 >
                   <ArrowLeft size={12} /> Change email
@@ -189,7 +189,7 @@ export default function LoginPage() {
                   className={`font-medium transition-colors ${
                     cooldown
                       ? "text-gray-300 cursor-not-allowed"
-                      : "text-[#0c0054] hover:text-[#1a0a6e]"
+                      : "text-[#263042] hover:text-[#344a60]"
                   }`}
                   data-testid="button-resend-code"
                 >

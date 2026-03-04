@@ -41,7 +41,7 @@ function AuthenticatedApp() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0c0054]">
+      <div className="min-h-screen flex items-center justify-center bg-[#263042]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={32} className="animate-spin text-amber-400" />
           <p className="text-white/60 text-sm font-medium">Loading...</p>
