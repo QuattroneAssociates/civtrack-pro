@@ -1151,6 +1151,11 @@ function FormField({
           data-testid={`select-${id}`}
         >
           <option value="">Select...</option>
+          {value && !options.includes(value) && (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          )}
           {options.map((o) => (
             <option key={o} value={o}>
               {o}
