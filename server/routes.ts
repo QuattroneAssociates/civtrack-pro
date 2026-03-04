@@ -2,7 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { requireAuth, requireRole } from "./auth";
-import { insertUserSchema, insertProjectSchema, insertPermitSchema, insertTaskSchema, insertNoteSchema, insertAuditLogSchema } from "@shared/schema";
+import { insertUserSchema, insertProjectSchema, insertPermitSchema, insertTaskSchema, insertNoteSchema, insertAuditLogSchema, users } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -124,6 +126,29 @@ export async function registerRoutes(
     const task = await storage.updateTask(req.params.id, parsed.data);
     if (!task) return res.status(404).json({ message: "Task not found" });
     res.json(task);
+  });
+
+  app.patch("/api/tasks/:id/status", requireAuth, async (req, res) => {
+    const { status, dateCompleted } = req.body;
+    if (!status) return res.status(400).json({ message: "Status is required" });
+
+    const task = await storage.getTask(req.params.id);
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    const [sessionUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, req.session.userId!));
+
+    if (!sessionUser) return res.status(401).json({ message: "User not found" });
+
+    const isAdminOrPM = sessionUser.authRole === "admin" || sessionUser.authRole === "project_manager";
+    if (!isAdminOrPM && task.assignedTo.toLowerCase() !== sessionUser.name.toLowerCase()) {
+      return res.status(403).json({ message: "You can only update status on your own tasks" });
+    }
+
+    const updated = await storage.updateTask(req.params.id, { status, dateCompleted });
+    res.json(updated);
   });
 
   app.delete("/api/tasks/:id", requireRole("admin", "project_manager"), async (req, res) => {

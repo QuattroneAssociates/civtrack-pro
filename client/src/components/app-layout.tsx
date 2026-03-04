@@ -41,7 +41,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: tasks = [] } = useQuery<Task[]>({ queryKey: ["/api/tasks"] });
   const { data: permits = [] } = useQuery<Permit[]>({ queryKey: ["/api/permits"] });
 
-  const activeTasks = tasks.filter((t) => t.status !== "Completed").length;
+  const myActiveTasks = tasks.filter(
+    (t) => t.status !== "Completed" && user?.name && t.assignedTo.toLowerCase() === user.name.toLowerCase()
+  ).length;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -58,7 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }).length;
 
   const getBadge = (path: string) => {
-    if (path === "/tasks") return activeTasks || undefined;
+    if (path === "/tasks") return myActiveTasks || undefined;
     if (path === "/alerts") return alertCount || undefined;
     return undefined;
   };

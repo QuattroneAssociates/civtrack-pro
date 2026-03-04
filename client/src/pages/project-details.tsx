@@ -699,8 +699,12 @@ function TaskSection({
   users: User[];
 }) {
   const { toast } = useToast();
-  const { hasRole } = useAuth();
+  const { hasRole, user: authUser } = useAuth();
   const canManageTasks = hasRole("admin", "project_manager");
+  const canToggleTask = (task: Task) => {
+    if (canManageTasks) return true;
+    return authUser?.name && task.assignedTo.toLowerCase() === authUser.name.toLowerCase();
+  };
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -733,7 +737,7 @@ function TaskSection({
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiRequest("PATCH", `/api/tasks/${id}`, {
+      apiRequest("PATCH", `/api/tasks/${id}/status`, {
         status,
         dateCompleted:
           status === "Completed"
@@ -857,6 +861,7 @@ function TaskSection({
             <TaskRow
               key={task.id}
               task={task}
+              canToggle={canToggleTask(task)}
               onToggle={() =>
                 toggleMutation.mutate({
                   id: task.id,
@@ -878,6 +883,7 @@ function TaskSection({
               <TaskRow
                 key={task.id}
                 task={task}
+                canToggle={canToggleTask(task)}
                 onToggle={() =>
                   toggleMutation.mutate({
                     id: task.id,
@@ -908,9 +914,11 @@ function TaskSection({
 function TaskRow({
   task,
   onToggle,
+  canToggle = true,
 }: {
   task: Task;
   onToggle: () => void;
+  canToggle?: boolean;
 }) {
   const isComplete = task.status === "Completed";
   const today = new Date();
@@ -927,11 +935,17 @@ function TaskRow({
       data-testid={`task-row-${task.id}`}
     >
       <button
-        onClick={onToggle}
+        onClick={canToggle ? onToggle : undefined}
+        disabled={!canToggle}
         className={`mt-0.5 flex-shrink-0 ${
-          isComplete ? "text-emerald-500" : "text-muted-foreground/40"
+          isComplete
+            ? "text-emerald-500"
+            : canToggle
+            ? "text-muted-foreground/40 hover:text-emerald-400"
+            : "text-muted-foreground/20 cursor-not-allowed"
         }`}
         data-testid={`button-toggle-task-${task.id}`}
+        title={canToggle ? "Mark complete" : "Only the assigned person can complete this task"}
       >
         <CheckCircle2 size={16} />
       </button>

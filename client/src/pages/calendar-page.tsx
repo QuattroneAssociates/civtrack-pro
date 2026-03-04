@@ -1,17 +1,23 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Task, Permit, Project, User } from "@shared/schema";
 import { parseDateSafe, formatDate } from "@/lib/dateUtils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
   AlertTriangle,
+  Plus,
+  X,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
+import { useAuth } from "@/lib/auth";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -42,9 +48,24 @@ export default function CalendarPage() {
     queryKey: ["/api/projects"],
   });
   const { data: users = [] } = useQuery<User[]>({ queryKey: ["/api/users"] });
+  const { user, hasRole } = useAuth();
+  const { toast } = useToast();
+
+  const canCreateTasks = hasRole("admin", "project_manager");
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedUser, setSelectedUser] = useState("All");
+  const [userInitialized, setUserInitialized] = useState(false);
+
+  if (user?.name && !userInitialized) {
+    setSelectedUser(user.name);
+    setUserInitialized(true);
+  }
+
+  const [addingTaskDate, setAddingTaskDate] = useState<string | null>(null);
+  const [newTaskName, setNewTaskName] = useState("");
+  const [newTaskProject, setNewTaskProject] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState("");
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -120,6 +141,52 @@ export default function CalendarPage() {
 
   const todayStr = new Date().toISOString().split("T")[0];
 
+  const activeProjects = useMemo(
+    () => projects.filter((p) => p.status === "Active" || p.status === "Active Priority" || p.status === "Construction"),
+    [projects]
+  );
+
+  const createTaskMutation = useMutation({
+    mutationFn: (data: { name: string; projectId: string; assignedTo: string; dueDate: string }) =>
+      apiRequest("POST", "/api/tasks", {
+        ...data,
+        description: "",
+        assignedBy: user?.name || "",
+        dateAssigned: new Date().toISOString().split("T")[0],
+        status: "Assigned",
+        isImportant: false,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({ title: "Task created", description: "New task added to calendar." });
+      setAddingTaskDate(null);
+      setNewTaskName("");
+      setNewTaskProject("");
+      setNewTaskAssignee("");
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create task.", variant: "destructive" });
+    },
+  });
+
+  const handleAddTask = () => {
+    if (!newTaskName.trim() || !newTaskProject || !addingTaskDate || !newTaskAssignee) return;
+    createTaskMutation.mutate({
+      name: newTaskName.trim(),
+      projectId: newTaskProject,
+      assignedTo: newTaskAssignee,
+      dueDate: addingTaskDate,
+    });
+  };
+
+  const handleDayClick = (dateStr: string) => {
+    if (!canCreateTasks || !dateStr) return;
+    setAddingTaskDate(dateStr);
+    setNewTaskName("");
+    setNewTaskProject(activeProjects[0]?.id || "");
+    setNewTaskAssignee(user?.name || "");
+  };
+
   if (tLoading) {
     return (
       <div className="space-y-4" data-testid="calendar-loading">
@@ -189,6 +256,75 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {addingTaskDate && (
+        <Card className="border-card-border" data-testid="add-task-form">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-black uppercase tracking-widest">
+                Add Task for {new Date(addingTaskDate + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              </h3>
+              <button
+                onClick={() => setAddingTaskDate(null)}
+                className="p-1 rounded hover:bg-muted transition-colors"
+                data-testid="button-cancel-add-task"
+              >
+                <X size={14} className="text-muted-foreground" />
+              </button>
+            </div>
+            <div className="flex items-end gap-3 flex-wrap">
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Task Name</label>
+                <Input
+                  value={newTaskName}
+                  onChange={(e) => setNewTaskName(e.target.value)}
+                  placeholder="e.g., Submit ERP Application"
+                  className="h-9 text-sm"
+                  autoFocus
+                  data-testid="input-new-task-name"
+                />
+              </div>
+              <div className="min-w-[180px]">
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Project</label>
+                <select
+                  value={newTaskProject}
+                  onChange={(e) => setNewTaskProject(e.target.value)}
+                  className="w-full h-9 px-3 rounded-md text-sm bg-background border"
+                  data-testid="select-new-task-project"
+                >
+                  <option value="">Select project...</option>
+                  {activeProjects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-[150px]">
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Assign To</label>
+                <select
+                  value={newTaskAssignee}
+                  onChange={(e) => setNewTaskAssignee(e.target.value)}
+                  className="w-full h-9 px-3 rounded-md text-sm bg-background border"
+                  data-testid="select-new-task-assignee"
+                >
+                  <option value="">Select person...</option>
+                  {users.filter(u => u.isActive).map((u) => (
+                    <option key={u.id} value={u.name}>{u.name}</option>
+                  ))}
+                </select>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleAddTask}
+                disabled={!newTaskName.trim() || !newTaskProject || !newTaskAssignee || createTaskMutation.isPending}
+                data-testid="button-save-new-task"
+              >
+                <Plus size={14} className="mr-1" />
+                Add Task
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-card-border">
         <div className="px-5 py-3 border-b">
           <h3 className="text-sm font-black">
@@ -208,6 +344,7 @@ export default function CalendarPage() {
 
             {calendarDays.map((day, i) => {
               const isToday = day.date === todayStr;
+              const isAddingThis = addingTaskDate === day.date;
               return (
                 <div
                   key={i}
@@ -216,20 +353,38 @@ export default function CalendarPage() {
                       ? "bg-muted/20"
                       : isToday
                       ? "bg-primary/5"
+                      : isAddingThis
+                      ? "bg-primary/10 ring-1 ring-primary/30"
+                      : canCreateTasks
+                      ? "cursor-pointer hover:bg-muted/20 transition-colors"
                       : ""
                   }`}
+                  onClick={() => day.day > 0 && handleDayClick(day.date)}
+                  data-testid={day.day > 0 ? `calendar-day-${day.date}` : undefined}
                 >
                   {day.day > 0 && (
                     <>
-                      <span
-                        className={`text-xs font-bold ${
-                          isToday
-                            ? "bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {day.day}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`text-xs font-bold ${
+                            isToday
+                              ? "bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {day.day}
+                        </span>
+                        {canCreateTasks && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDayClick(day.date); }}
+                            className="opacity-0 group-hover:opacity-100 hover:opacity-100 p-0.5 rounded hover:bg-muted transition-all text-muted-foreground/40 hover:text-primary"
+                            data-testid={`button-add-task-${day.date}`}
+                            title="Add task"
+                          >
+                            <Plus size={10} />
+                          </button>
+                        )}
+                      </div>
                       <div className="mt-1 space-y-0.5">
                         {day.events.slice(0, 3).map((evt) => (
                           <div
@@ -244,6 +399,7 @@ export default function CalendarPage() {
                                 : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                             }`}
                             title={evt.title}
+                            data-testid={`calendar-event-${evt.id}`}
                           >
                             {evt.title}
                           </div>
@@ -282,6 +438,14 @@ export default function CalendarPage() {
             High Priority
           </span>
         </div>
+        {canCreateTasks && (
+          <div className="flex items-center gap-1.5">
+            <Plus size={12} className="text-muted-foreground" />
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              Click a day to add a task
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

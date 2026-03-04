@@ -29,6 +29,7 @@ export interface IStorage {
   deletePermit(id: string): Promise<void>;
 
   getTasks(): Promise<Task[]>;
+  getTask(id: string): Promise<Task | undefined>;
   getTasksByProject(projectId: string): Promise<Task[]>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: string, task: Partial<InsertTask>): Promise<Task | undefined>;
@@ -114,6 +115,11 @@ export class DatabaseStorage implements IStorage {
 
   async getTasks(): Promise<Task[]> {
     return db.select().from(tasks).orderBy(desc(tasks.dateAssigned));
+  }
+
+  async getTask(id: string): Promise<Task | undefined> {
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+    return task;
   }
 
   async getTasksByProject(projectId: string): Promise<Task[]> {

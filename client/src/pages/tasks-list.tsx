@@ -17,6 +17,7 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useAuth } from "@/lib/auth";
 
 type ViewMode = "board" | "active" | "archived";
 
@@ -28,13 +29,16 @@ export default function TasksList() {
     queryKey: ["/api/projects"],
   });
   const { data: users = [] } = useQuery<User[]>({ queryKey: ["/api/users"] });
+  const { user, hasRole } = useAuth();
 
   const [assigneeFilter, setAssigneeFilter] = useState("All");
   const [viewMode, setViewMode] = useState<ViewMode>("board");
 
+  const canEditTasks = hasRole("admin", "project_manager");
+
   const toggleMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiRequest("PATCH", `/api/tasks/${id}`, {
+      apiRequest("PATCH", `/api/tasks/${id}/status`, {
         status,
         dateCompleted:
           status === "Completed"
@@ -87,6 +91,11 @@ export default function TasksList() {
     });
     return cols;
   }, [filteredTasks, viewMode]);
+
+  const canToggleTask = (task: Task) => {
+    if (canEditTasks) return true;
+    return user?.name && task.assignedTo.toLowerCase() === user.name.toLowerCase();
+  };
 
   if (tLoading) {
     return (
@@ -168,6 +177,7 @@ export default function TasksList() {
                     key={task.id}
                     task={task}
                     projects={projects}
+                    canToggle={canToggleTask(task)}
                     onToggle={() =>
                       toggleMutation.mutate({
                         id: task.id,
@@ -194,6 +204,7 @@ export default function TasksList() {
               key={task.id}
               task={task}
               projects={projects}
+              canToggle={canToggleTask(task)}
               onToggle={() =>
                 toggleMutation.mutate({
                   id: task.id,
@@ -242,10 +253,12 @@ export default function TasksList() {
 function TaskCard({
   task,
   projects,
+  canToggle,
   onToggle,
 }: {
   task: Task;
   projects: Project[];
+  canToggle: boolean;
   onToggle: () => void;
 }) {
   const project = projects.find((p) => p.id === task.projectId);
@@ -264,13 +277,17 @@ function TaskCard({
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <button
-            onClick={onToggle}
+            onClick={canToggle ? onToggle : undefined}
+            disabled={!canToggle}
             className={`mt-0.5 flex-shrink-0 transition-colors ${
               isComplete
                 ? "text-emerald-500"
-                : "text-muted-foreground/40 hover:text-emerald-400"
+                : canToggle
+                ? "text-muted-foreground/40 hover:text-emerald-400"
+                : "text-muted-foreground/20 cursor-not-allowed"
             }`}
             data-testid={`button-toggle-task-${task.id}`}
+            title={canToggle ? "Mark complete" : "Only the assigned person can complete this task"}
           >
             <CheckCircle2 size={16} />
           </button>
