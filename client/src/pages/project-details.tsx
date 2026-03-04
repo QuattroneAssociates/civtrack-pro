@@ -603,7 +603,7 @@ function PermitSection({
       )}
 
       {filteredPermits.length > 0 ? (
-        <div className="rounded-lg border border-card-border">
+        <div className="rounded-lg border border-card-border max-h-[70vh] overflow-y-auto">
           <table className="w-full text-[11px] table-fixed" data-testid="permit-table">
             <colgroup>
               <col className="w-[18%]" />
@@ -618,8 +618,8 @@ function PermitSection({
               <col className="w-[8%]" />
               {canEdit && <col className="w-[6%]" />}
             </colgroup>
-            <thead>
-              <tr className="border-b bg-muted/30">
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b bg-background shadow-[0_1px_0_0_hsl(var(--border))]">
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Type</th>
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">#</th>
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Target</th>
