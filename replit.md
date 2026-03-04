@@ -13,7 +13,8 @@ Full-stack civil engineering project management application migrated from a Goog
 - `server/db.ts` — Database connection pool
 - `server/storage.ts` — DatabaseStorage class implementing IStorage interface
 - `server/routes.ts` — Full CRUD API routes under `/api/`
-- `server/seed.ts` — Realistic seed data (5 projects, 9 permits, 8 tasks, 5 notes)
+- `server/seed.ts` — Seeds 13 team members on fresh start (no sample project data)
+- `server/import-csv.ts` — CSV import script for real data (projects, permits, tasks, notes)
 - `client/src/App.tsx` — Route definitions
 - `client/src/components/app-layout.tsx` — Sidebar layout with dark navy (#0c0054) + amber accents
 
@@ -34,6 +35,8 @@ Full-stack civil engineering project management application migrated from a Goog
 - Tables: users, projects, permits, tasks, notes, auditLogs
 - UUID primary keys generated via `gen_random_uuid()`
 - Project delete cascades to permits, tasks, notes
+- Real data: 2,281 projects, 1,377 permits, 103 tasks, 383 notes, 26 users
+- Project statuses: Active (188), Closed (2,024), Construction (61), On Hold (8), Proposal (14)
 
 ## API Pattern
 - `apiRequest(method, url, data)` from `@/lib/queryClient`
