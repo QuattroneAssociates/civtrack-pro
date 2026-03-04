@@ -286,7 +286,10 @@ export default function Dashboard() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold truncate">
-                          {item.type} {item.number ? `#${item.number}` : ""} &mdash; {item.projectName}
+                          {item.projectName}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                          {item.type}
                         </p>
                       </div>
                       <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
