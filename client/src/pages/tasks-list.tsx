@@ -3,11 +3,8 @@ import { Link } from "wouter";
 import type { Task, Project, User } from "@shared/schema";
 import { formatDate, parseDateSafe } from "@/lib/dateUtils";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  CheckCircle2,
   AlertTriangle,
   Calendar,
   SearchX,
@@ -16,11 +13,42 @@ import {
   ListTodo,
   LayoutGrid,
   ChevronDown,
+  Flag,
+  ArrowUpDown,
 } from "lucide-react";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 
 type ViewMode = "board" | "active" | "archived";
+
+const STATUSES = ["Assigned", "In Progress", "Complete"];
+const PRIORITIES = ["High", "Medium", "Low"];
+
+const STATUS_COLORS: Record<string, string> = {
+  Assigned: "bg-blue-100 text-blue-800 border-blue-200",
+  "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
+  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
+};
+
+const PRIORITY_COLORS: Record<string, string> = {
+  High: "text-rose-600",
+  Medium: "text-amber-500",
+  Low: "text-slate-400",
+};
+
+const PRIORITY_WEIGHT: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+
+function sortByDueDate(tasks: Task[]): Task[] {
+  return [...tasks].sort((a, b) => {
+    const da = parseDateSafe(a.dueDate);
+    const db = parseDateSafe(b.dueDate);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da.getTime() - db.getTime();
+  });
+}
 
 export default function TasksList() {
   const { data: tasks = [], isLoading: tLoading } = useQuery<Task[]>({
@@ -32,23 +60,37 @@ export default function TasksList() {
   const { data: users = [] } = useQuery<User[]>({ queryKey: ["/api/users"] });
   const { user, hasRole } = useAuth();
 
-  const [assigneeFilter, setAssigneeFilter] = useState("All");
+  const [assigneeFilter, setAssigneeFilter] = useState("__init__");
   const [viewMode, setViewMode] = useState<ViewMode>("board");
+
+  if (assigneeFilter === "__init__" && user?.name) {
+    setAssigneeFilter(user.name);
+  }
 
   const canEditTasks = hasRole("admin", "project_manager");
 
+  const statusMutation = useMutation({
+    mutationFn: ({ id, ...data }: { id: string; status?: string; dateCompleted?: string | null; priority?: string }) =>
+      apiRequest("PATCH", `/api/tasks/${id}/status`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  const effectiveFilter = assigneeFilter === "__init__" ? "All" : assigneeFilter;
+
   const counts = useMemo(() => {
     let base = [...tasks];
-    if (assigneeFilter !== "All") {
+    if (effectiveFilter !== "All") {
       base = base.filter(
-        (t) => t.assignedTo.toLowerCase() === assigneeFilter.toLowerCase()
+        (t) => t.assignedTo.toLowerCase() === effectiveFilter.toLowerCase()
       );
     }
     return {
       active: base.filter((t) => t.status !== "Completed" && t.status !== "Complete").length,
       archived: base.filter((t) => t.status === "Completed" || t.status === "Complete").length,
     };
-  }, [tasks, assigneeFilter]);
+  }, [tasks, effectiveFilter]);
 
   const filteredTasks = useMemo(() => {
     let filtered = [...tasks];
@@ -57,29 +99,13 @@ export default function TasksList() {
     } else if (viewMode === "archived") {
       filtered = filtered.filter((t) => t.status === "Completed" || t.status === "Complete");
     }
-    if (assigneeFilter !== "All") {
+    if (effectiveFilter !== "All") {
       filtered = filtered.filter(
-        (t) => t.assignedTo.toLowerCase() === assigneeFilter.toLowerCase()
+        (t) => t.assignedTo.toLowerCase() === effectiveFilter.toLowerCase()
       );
     }
-    return filtered;
-  }, [tasks, viewMode, assigneeFilter]);
-
-  const STATUSES = ["Assigned", "In Progress", "Complete"];
-
-  const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiRequest("PATCH", `/api/tasks/${id}/status`, {
-        status,
-        dateCompleted:
-          status === "Complete" || status === "Completed"
-            ? new Date().toISOString().split("T")[0]
-            : null,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
+    return sortByDueDate(filtered);
+  }, [tasks, viewMode, effectiveFilter]);
 
   const boardColumns = useMemo(() => {
     if (viewMode !== "board") return {};
@@ -95,6 +121,9 @@ export default function TasksList() {
       if (!cols[status]) cols[status] = [];
       cols[status].push(t);
     });
+    Object.keys(cols).forEach((k) => {
+      cols[k] = sortByDueDate(cols[k]);
+    });
     return cols;
   }, [filteredTasks, viewMode]);
 
@@ -107,15 +136,15 @@ export default function TasksList() {
     return (
       <div className="space-y-4" data-testid="tasks-loading">
         <Skeleton className="h-8 w-48" />
-        {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-20 rounded-lg" />
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-12 rounded-lg" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-5" data-testid="tasks-list-page">
+    <div className="space-y-4" data-testid="tasks-list-page">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-black tracking-tight uppercase" data-testid="text-tasks-title">
@@ -128,7 +157,7 @@ export default function TasksList() {
 
         <div className="flex items-center gap-2 flex-wrap">
           <select
-            value={assigneeFilter}
+            value={effectiveFilter}
             onChange={(e) => setAssigneeFilter(e.target.value)}
             className="px-3 py-1.5 rounded-md text-xs bg-muted border-0 font-bold"
             data-testid="select-assignee-filter"
@@ -168,34 +197,41 @@ export default function TasksList() {
       </div>
 
       {viewMode === "board" ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {Object.entries(boardColumns).map(([status, columnTasks]) => (
             <div key={status}>
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
                 {status}
                 <span className="bg-muted px-1.5 py-0.5 rounded text-[9px]">
                   {columnTasks.length}
                 </span>
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {columnTasks.map((task) => (
-                  <TaskCard
+                  <TaskRow
                     key={task.id}
                     task={task}
                     projects={projects}
                     canToggle={canToggleTask(task)}
-                    statuses={STATUSES}
+                    compact
                     onStatusChange={(newStatus) =>
                       statusMutation.mutate({
                         id: task.id,
                         status: newStatus,
+                        dateCompleted:
+                          newStatus === "Complete" || newStatus === "Completed"
+                            ? new Date().toISOString().split("T")[0]
+                            : null,
                       })
+                    }
+                    onPriorityChange={(priority) =>
+                      statusMutation.mutate({ id: task.id, priority })
                     }
                   />
                 ))}
                 {columnTasks.length === 0 && (
-                  <div className="py-8 text-center border-2 border-dashed rounded-lg">
-                    <p className="text-[10px] text-muted-foreground font-bold">
+                  <div className="py-6 text-center border border-dashed rounded-lg">
+                    <p className="text-[10px] text-muted-foreground">
                       No tasks
                     </p>
                   </div>
@@ -205,22 +241,37 @@ export default function TasksList() {
           ))}
         </div>
       ) : filteredTasks.length > 0 ? (
-        <div className="space-y-2">
-          {filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              projects={projects}
-              canToggle={canToggleTask(task)}
-              statuses={STATUSES}
-              onStatusChange={(newStatus) =>
-                statusMutation.mutate({
-                  id: task.id,
-                  status: newStatus,
-                })
-              }
-            />
-          ))}
+        <div>
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-x-4 gap-y-0 items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-3 py-2 border-b">
+            <span>Priority</span>
+            <span>Task</span>
+            <span>Due</span>
+            <span>Status</span>
+            <span className="w-16"></span>
+          </div>
+          <div className="divide-y">
+            {filteredTasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                projects={projects}
+                canToggle={canToggleTask(task)}
+                onStatusChange={(newStatus) =>
+                  statusMutation.mutate({
+                    id: task.id,
+                    status: newStatus,
+                    dateCompleted:
+                      newStatus === "Complete" || newStatus === "Completed"
+                        ? new Date().toISOString().split("T")[0]
+                        : null,
+                  })
+                }
+                onPriorityChange={(priority) =>
+                  statusMutation.mutate({ id: task.id, priority })
+                }
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="py-20 text-center">
@@ -257,23 +308,20 @@ export default function TasksList() {
   );
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  Assigned: "bg-blue-100 text-blue-800 border-blue-200",
-  "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
-  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
-};
-
-function StatusDropdown({
-  currentStatus,
-  statuses,
+function InlineDropdown({
+  value,
+  options,
+  colorMap,
   canToggle,
-  onStatusChange,
+  onChange,
+  testIdPrefix,
 }: {
-  currentStatus: string;
-  statuses: string[];
+  value: string;
+  options: string[];
+  colorMap: Record<string, string>;
   canToggle: boolean;
-  onStatusChange: (status: string) => void;
+  onChange: (v: string) => void;
+  testIdPrefix: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -288,38 +336,36 @@ function StatusDropdown({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  const displayStatus = currentStatus === "Completed" ? "Complete" : currentStatus;
-  const colorClass = STATUS_COLORS[currentStatus] || STATUS_COLORS["Assigned"];
+  const display = value === "Completed" ? "Complete" : value;
+  const colorClass = colorMap[value] || colorMap[options[0]] || "";
 
   return (
     <div className="relative" ref={ref}>
       <button
         onClick={() => canToggle && setOpen(!open)}
         disabled={!canToggle}
-        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-colors ${colorClass} ${
+        className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-colors ${colorClass} ${
           canToggle ? "cursor-pointer hover:opacity-80" : "cursor-not-allowed opacity-60"
         }`}
-        data-testid={`button-status-${displayStatus.toLowerCase().replace(/\s+/g, "-")}`}
-        title={canToggle ? "Change status" : "Only the assigned person can change this task's status"}
+        data-testid={`button-${testIdPrefix}-${display.toLowerCase().replace(/\s+/g, "-")}`}
       >
-        {displayStatus}
-        {canToggle && <ChevronDown size={10} />}
+        {display}
+        {canToggle && <ChevronDown size={9} />}
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 left-0 bg-card border rounded-md shadow-lg py-1 min-w-[120px]" data-testid="dropdown-status-options">
-          {statuses.map((s) => (
+        <div className="absolute z-50 mt-1 right-0 bg-card border rounded-md shadow-lg py-1 min-w-[110px]" data-testid={`dropdown-${testIdPrefix}-options`}>
+          {options.map((s) => (
             <button
               key={s}
               onClick={() => {
-                onStatusChange(s === "Complete" ? "Completed" : s);
+                onChange(s === "Complete" ? "Completed" : s);
                 setOpen(false);
               }}
-              className={`w-full text-left px-3 py-1.5 text-[11px] font-medium hover:bg-muted transition-colors flex items-center gap-2 ${
-                (displayStatus === s) ? "bg-muted/50 font-bold" : ""
+              className={`w-full text-left px-3 py-1 text-[11px] font-medium hover:bg-muted transition-colors ${
+                display === s ? "bg-muted/50 font-bold" : ""
               }`}
-              data-testid={`option-status-${s.toLowerCase().replace(/\s+/g, "-")}`}
+              data-testid={`option-${testIdPrefix}-${s.toLowerCase().replace(/\s+/g, "-")}`}
             >
-              <span className={`w-2 h-2 rounded-full ${STATUS_COLORS[s]?.split(" ")[0] || "bg-gray-300"}`} />
               {s}
             </button>
           ))}
@@ -329,92 +375,173 @@ function StatusDropdown({
   );
 }
 
-function TaskCard({
+function TaskRow({
   task,
   projects,
   canToggle,
-  statuses,
+  compact,
   onStatusChange,
+  onPriorityChange,
 }: {
   task: Task;
   projects: Project[];
   canToggle: boolean;
-  statuses: string[];
+  compact?: boolean;
   onStatusChange: (status: string) => void;
+  onPriorityChange: (priority: string) => void;
 }) {
   const project = projects.find((p) => p.id === task.projectId);
   const isComplete = task.status === "Completed" || task.status === "Complete";
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const dueDate = parseDateSafe(task.dueDate);
-  const isOverdue =
-    !isComplete && dueDate && dueDate.getTime() < today.getTime();
+  const isOverdue = !isComplete && dueDate && dueDate.getTime() < today.getTime();
+  const priority = (task as any).priority || "Medium";
+  const priorityColor = PRIORITY_COLORS[priority] || PRIORITY_COLORS.Medium;
 
-  return (
-    <Card
-      className={`border-card-border ${isComplete ? "opacity-60" : ""}`}
-      data-testid={`task-card-${task.id}`}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <p
-                className={`text-sm font-bold ${
-                  isComplete ? "line-through text-muted-foreground" : ""
-                }`}
-              >
-                {task.isImportant && !isComplete && (
-                  <AlertTriangle
-                    size={12}
-                    className="inline mr-1 text-rose-500"
-                  />
-                )}
-                {task.name}
-              </p>
-              <StatusDropdown
-                currentStatus={task.status}
-                statuses={statuses}
-                canToggle={canToggle}
-                onStatusChange={onStatusChange}
-              />
-            </div>
-            {task.description && (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                {task.description}
-              </p>
-            )}
-            <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground flex-wrap">
-              {project && (
-                <Link href={`/projects/${project.id}`}>
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors" data-testid={`link-task-project-${task.id}`}>
-                    <Briefcase size={10} />
-                    {project.name}
-                  </span>
-                </Link>
-              )}
-              <span>Assigned to: {task.assignedTo}</span>
-              <span
-                className={
-                  isOverdue ? "text-rose-500 font-bold" : ""
-                }
-              >
-                <Calendar size={10} className="inline mr-0.5" />
-                {formatDate(task.dueDate)}
-                {isOverdue && " (Overdue)"}
-              </span>
-              {(task.tags as string[] | null)?.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-1.5 py-0.5 bg-muted rounded text-[9px] font-bold"
-                >
-                  {tag}
+  if (compact) {
+    return (
+      <div
+        className={`flex items-center gap-2 px-3 py-2 rounded-md border bg-card transition-colors hover:shadow-sm ${
+          isComplete ? "opacity-50" : ""
+        }`}
+        data-testid={`task-card-${task.id}`}
+      >
+        <Flag size={11} className={`flex-shrink-0 ${priorityColor}`} data-testid={`flag-priority-${task.id}`} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className={`text-xs font-semibold truncate ${isComplete ? "line-through text-muted-foreground" : ""}`}>
+              {task.name}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+            {project && (
+              <Link href={`/projects/${project.id}`}>
+                <span className="truncate max-w-[140px] hover:text-primary transition-colors cursor-pointer" data-testid={`link-task-project-${task.id}`}>
+                  {project.name}
                 </span>
-              ))}
-            </div>
+              </Link>
+            )}
+            <span className={`flex-shrink-0 ${isOverdue ? "text-rose-500 font-bold" : ""}`}>
+              {formatDate(task.dueDate)}
+              {isOverdue && " !"}
+            </span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        <PriorityDropdown priority={priority} canToggle={canToggle} onChange={onPriorityChange} />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`grid grid-cols-[auto_1fr_auto_auto_auto] gap-x-4 items-center px-3 py-2.5 transition-colors hover:bg-muted/30 ${
+        isComplete ? "opacity-50" : ""
+      }`}
+      data-testid={`task-card-${task.id}`}
+    >
+      <Flag size={12} className={`flex-shrink-0 ${priorityColor}`} data-testid={`flag-priority-${task.id}`} />
+
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <p className={`text-sm font-semibold truncate ${isComplete ? "line-through text-muted-foreground" : ""}`}>
+            {task.name}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
+          {project && (
+            <Link href={`/projects/${project.id}`}>
+              <span className="hover:text-primary transition-colors cursor-pointer truncate max-w-[200px]" data-testid={`link-task-project-${task.id}`}>
+                <Briefcase size={9} className="inline mr-0.5" />
+                {project.name}
+              </span>
+            </Link>
+          )}
+          <span>· {task.assignedTo}</span>
+          {task.description && (
+            <span className="truncate max-w-[200px] hidden lg:inline">· {task.description}</span>
+          )}
+        </div>
+      </div>
+
+      <span className={`text-xs flex-shrink-0 ${isOverdue ? "text-rose-500 font-bold" : "text-muted-foreground"}`}>
+        <Calendar size={10} className="inline mr-0.5" />
+        {formatDate(task.dueDate)}
+        {isOverdue && " (Overdue)"}
+      </span>
+
+      <InlineDropdown
+        value={task.status}
+        options={STATUSES}
+        colorMap={STATUS_COLORS}
+        canToggle={canToggle}
+        onChange={onStatusChange}
+        testIdPrefix="status"
+      />
+
+      <PriorityDropdown priority={priority} canToggle={canToggle} onChange={onPriorityChange} />
+    </div>
+  );
+}
+
+function PriorityDropdown({
+  priority,
+  canToggle,
+  onChange,
+}: {
+  priority: string;
+  canToggle: boolean;
+  onChange: (p: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const color = PRIORITY_COLORS[priority] || PRIORITY_COLORS.Medium;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => canToggle && setOpen(!open)}
+        disabled={!canToggle}
+        className={`inline-flex items-center gap-0.5 text-[10px] font-bold transition-colors ${color} ${
+          canToggle ? "cursor-pointer hover:opacity-70" : "cursor-not-allowed opacity-60"
+        }`}
+        data-testid={`button-priority-${priority.toLowerCase()}`}
+        title={`Priority: ${priority}`}
+      >
+        <Flag size={11} />
+        {canToggle && <ChevronDown size={8} />}
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 right-0 bg-card border rounded-md shadow-lg py-1 min-w-[90px]" data-testid="dropdown-priority-options">
+          {PRIORITIES.map((p) => (
+            <button
+              key={p}
+              onClick={() => {
+                onChange(p);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1 text-[11px] font-medium hover:bg-muted transition-colors flex items-center gap-2 ${
+                priority === p ? "bg-muted/50 font-bold" : ""
+              }`}
+              data-testid={`option-priority-${p.toLowerCase()}`}
+            >
+              <Flag size={10} className={PRIORITY_COLORS[p]} />
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

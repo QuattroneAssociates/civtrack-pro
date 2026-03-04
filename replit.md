@@ -40,7 +40,7 @@ Full-stack civil engineering project management application migrated from a Goog
 - `/projects/new` — Create project form (admin only)
 - `/projects/:id` — Project details (permit matrix, task ledger, notes tabs)
 - `/projects/:id/edit` — Edit project form (admin only)
-- `/tasks` — Task list with board (4 columns: Pending/Assigned/In Progress/Complete), list, and archive views; status dropdown on each card
+- `/tasks` — Task list with board (3 columns: Assigned/In Progress/Complete), list, and archive views; status + priority dropdowns on each task; sorted by due date; defaults to logged-in user's tasks
 - `/alerts` — Alert center (target deadlines, expirations, stagnant, unpaid fees)
 - `/calendar` — Calendar view for tasks and permit expirations
 - `/reports` — Analytics (admin only)

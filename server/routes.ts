@@ -129,13 +129,7 @@ export async function registerRoutes(
   });
 
   app.patch("/api/tasks/:id/status", requireAuth, async (req, res) => {
-    const { status, dateCompleted } = req.body;
-    if (!status) return res.status(400).json({ message: "Status is required" });
-
-    const validStatuses = ["Assigned", "In Progress", "Complete", "Completed"];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
-    }
+    const { status, dateCompleted, priority } = req.body;
 
     const task = await storage.getTask(req.params.id);
     if (!task) return res.status(404).json({ message: "Task not found" });
@@ -149,10 +143,33 @@ export async function registerRoutes(
 
     const isAdminOrPM = sessionUser.authRole === "admin" || sessionUser.authRole === "project_manager";
     if (!isAdminOrPM && task.assignedTo.toLowerCase() !== sessionUser.name.toLowerCase()) {
-      return res.status(403).json({ message: "You can only update status on your own tasks" });
+      return res.status(403).json({ message: "You can only update your own tasks" });
     }
 
-    const updated = await storage.updateTask(req.params.id, { status, dateCompleted });
+    const updateData: Record<string, any> = {};
+
+    if (status) {
+      const validStatuses = ["Assigned", "In Progress", "Complete", "Completed"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      updateData.status = status;
+      updateData.dateCompleted = dateCompleted || null;
+    }
+
+    if (priority) {
+      const validPriorities = ["High", "Medium", "Low"];
+      if (!validPriorities.includes(priority)) {
+        return res.status(400).json({ message: "Invalid priority" });
+      }
+      updateData.priority = priority;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
+    }
+
+    const updated = await storage.updateTask(req.params.id, updateData);
     res.json(updated);
   });
 

@@ -14,7 +14,7 @@ import {
   MapPin, UserCheck, Landmark, ExternalLink, Folder, Pencil,
   Trash2, Plus, Calendar, FileText, ClipboardList, MessageSquare,
   CheckCircle2, AlertTriangle, Clock, ArrowLeft, Phone, Mail,
-  Search, MoreHorizontal, ChevronDown,
+  Search, MoreHorizontal, ChevronDown, Flag,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -738,14 +738,8 @@ function TaskSection({
   const STATUSES = ["Assigned", "In Progress", "Complete"];
 
   const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiRequest("PATCH", `/api/tasks/${id}/status`, {
-        status,
-        dateCompleted:
-          status === "Completed" || status === "Complete"
-            ? new Date().toISOString().split("T")[0]
-            : null,
-      }),
+    mutationFn: ({ id, ...data }: { id: string; status?: string; dateCompleted?: string | null; priority?: string }) =>
+      apiRequest("PATCH", `/api/tasks/${id}/status`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["/api/projects", projectId, "tasks"],
@@ -759,7 +753,7 @@ function TaskSection({
     createMutation.mutate({
       ...formData,
       projectId,
-      status: "Pending",
+      status: "Assigned",
       notes: null,
       tags: null,
       comments: null,
@@ -869,7 +863,14 @@ function TaskSection({
                 statusMutation.mutate({
                   id: task.id,
                   status: newStatus,
+                  dateCompleted:
+                    newStatus === "Complete" || newStatus === "Completed"
+                      ? new Date().toISOString().split("T")[0]
+                      : null,
                 })
+              }
+              onPriorityChange={(priority) =>
+                statusMutation.mutate({ id: task.id, priority })
               }
             />
           ))}
@@ -892,7 +893,14 @@ function TaskSection({
                   statusMutation.mutate({
                     id: task.id,
                     status: newStatus,
+                    dateCompleted:
+                      newStatus === "Complete" || newStatus === "Completed"
+                        ? new Date().toISOString().split("T")[0]
+                        : null,
                   })
+                }
+                onPriorityChange={(priority) =>
+                  statusMutation.mutate({ id: task.id, priority })
                 }
               />
             ))}
@@ -987,16 +995,84 @@ function TaskStatusDropdown({
   );
 }
 
+const TASK_PRIORITY_COLORS: Record<string, string> = {
+  High: "text-rose-600",
+  Medium: "text-amber-500",
+  Low: "text-slate-400",
+};
+
+function TaskPriorityDropdown({
+  priority,
+  canToggle,
+  onChange,
+}: {
+  priority: string;
+  canToggle: boolean;
+  onChange: (p: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const color = TASK_PRIORITY_COLORS[priority] || TASK_PRIORITY_COLORS.Medium;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => canToggle && setOpen(!open)}
+        disabled={!canToggle}
+        className={`inline-flex items-center gap-0.5 text-[10px] font-bold transition-colors ${color} ${
+          canToggle ? "cursor-pointer hover:opacity-70" : "cursor-not-allowed opacity-60"
+        }`}
+        title={`Priority: ${priority}`}
+      >
+        <Flag size={11} />
+        {canToggle && <ChevronDown size={8} />}
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 right-0 bg-card border rounded-md shadow-lg py-1 min-w-[90px]">
+          {["High", "Medium", "Low"].map((p) => (
+            <button
+              key={p}
+              onClick={() => {
+                onChange(p);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1 text-[11px] font-medium hover:bg-muted transition-colors flex items-center gap-2 ${
+                priority === p ? "bg-muted/50 font-bold" : ""
+              }`}
+            >
+              <Flag size={10} className={TASK_PRIORITY_COLORS[p]} />
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TaskRow({
   task,
   canToggle = true,
   statuses,
   onStatusChange,
+  onPriorityChange,
 }: {
   task: Task;
   canToggle?: boolean;
   statuses: string[];
   onStatusChange: (status: string) => void;
+  onPriorityChange?: (priority: string) => void;
 }) {
   const isComplete = task.status === "Completed" || task.status === "Complete";
   const today = new Date();
@@ -1004,43 +1080,40 @@ function TaskRow({
   const dueDate = parseDateSafe(task.dueDate);
   const isOverdue =
     !isComplete && dueDate && dueDate.getTime() < today.getTime();
+  const priority = (task as any).priority || "Medium";
+  const priorityColor = TASK_PRIORITY_COLORS[priority] || TASK_PRIORITY_COLORS.Medium;
 
   return (
     <div
-      className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
+      className={`flex items-center gap-3 p-2.5 rounded-md border transition-colors ${
         isComplete ? "bg-muted/30" : "bg-card"
       }`}
       data-testid={`task-row-${task.id}`}
     >
+      <Flag size={11} className={`flex-shrink-0 ${priorityColor}`} />
       <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <p
-            className={`text-sm font-bold ${
+            className={`text-xs font-semibold truncate ${
               isComplete ? "line-through text-muted-foreground" : ""
             }`}
           >
-            {task.isImportant && !isComplete && (
-              <AlertTriangle
-                size={12}
-                className="inline mr-1 text-rose-500"
-              />
-            )}
             {task.name}
           </p>
-          <TaskStatusDropdown
-            currentStatus={task.status}
-            statuses={statuses}
-            canToggle={canToggle}
-            onStatusChange={onStatusChange}
-          />
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <TaskStatusDropdown
+              currentStatus={task.status}
+              statuses={statuses}
+              canToggle={canToggle}
+              onStatusChange={onStatusChange}
+            />
+            {onPriorityChange && (
+              <TaskPriorityDropdown priority={priority} canToggle={canToggle} onChange={onPriorityChange} />
+            )}
+          </div>
         </div>
-        {task.description && (
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-            {task.description}
-          </p>
-        )}
-        <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
-          <span>Assigned to: {task.assignedTo}</span>
+        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+          <span>{task.assignedTo}</span>
           <span
             className={isOverdue ? "text-rose-500 font-bold" : ""}
           >
