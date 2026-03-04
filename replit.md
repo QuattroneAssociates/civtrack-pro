@@ -7,47 +7,69 @@ Full-stack civil engineering project management application migrated from a Goog
 - **Frontend**: React + Vite, wouter routing, TanStack Query, shadcn/ui, Tailwind CSS, Recharts
 - **Backend**: Express.js on port 5000, PostgreSQL via Drizzle ORM
 - **Shared**: `shared/schema.ts` defines all Drizzle tables and Zod schemas
+- **Auth**: Email OTP login via Resend, express-session with connect-pg-simple, role-based access control
+
+## Authentication
+- **Login Flow**: Email → 6-digit OTP via Resend → Session-based auth
+- **Roles**: admin, project_manager, team_member
+- **19 authorized users** with @qainc.net login emails
+- **Session**: PostgreSQL-backed via connect-pg-simple (7-day cookie)
+- **Key files**: `server/auth.ts` (routes + middleware), `client/src/lib/auth.tsx` (AuthProvider context), `client/src/pages/login.tsx`
+- **Middleware**: `requireAuth` on all /api/* except /api/auth/*, `requireRole(...)` on write routes
+- **Permission Matrix**:
+  - Admin: Full access (CRUD projects, permits, tasks, notes; see Reports & Team)
+  - PM: Read projects, manage tasks/notes, no project CRUD, no Reports/Team
+  - Team Member: Read-only view, can only update own task status
 
 ## Key Files
-- `shared/schema.ts` — Database schema (users, projects, permits, tasks, notes, auditLogs)
+- `shared/schema.ts` — Database schema (users, projects, permits, tasks, notes, auditLogs, authCodes)
+- `server/auth.ts` — Authentication routes and middleware (OTP, session, role guards)
 - `server/db.ts` — Database connection pool
 - `server/storage.ts` — DatabaseStorage class implementing IStorage interface
-- `server/routes.ts` — Full CRUD API routes under `/api/`
+- `server/routes.ts` — Full CRUD API routes under `/api/` with role-based middleware
 - `server/seed.ts` — Seeds 13 team members on fresh start (no sample project data)
 - `server/import-csv.ts` — CSV import script for real data (projects, permits, tasks, notes)
-- `client/src/App.tsx` — Route definitions
-- `client/src/components/app-layout.tsx` — Sidebar layout with dark navy (#0c0054) + amber accents
+- `client/src/App.tsx` — Route definitions with AuthProvider wrapper
+- `client/src/lib/auth.tsx` — AuthContext provider (user state, login/logout, hasRole helper)
+- `client/src/pages/login.tsx` — Email OTP login page (two-step: email → code)
+- `client/src/components/app-layout.tsx` — Sidebar layout with role-based nav and logout
 
 ## Pages
 - `/` — Dashboard (metrics, active projects, deadline radar)
 - `/projects` — Project list with filters, pagination, search
-- `/projects/new` — Create project form
+- `/projects/new` — Create project form (admin only)
 - `/projects/:id` — Project details (permit matrix, task ledger, notes tabs)
-- `/projects/:id/edit` — Edit project form
+- `/projects/:id/edit` — Edit project form (admin only)
 - `/tasks` — Task list with board/list/archive views
 - `/alerts` — Alert center (target deadlines, expirations, stagnant, unpaid fees)
 - `/calendar` — Calendar view for tasks and permit expirations
-- `/reports` — Analytics (workload, pipeline, agencies, fee tracking)
-- `/users` — Team directory with CRUD
+- `/reports` — Analytics (admin only)
+- `/users` — Team directory (admin only)
 
 ## Database
 - PostgreSQL via `DATABASE_URL`
-- Tables: users, projects, permits, tasks, notes, auditLogs
+- Tables: users, projects, permits, tasks, notes, auditLogs, authCodes, session
 - UUID primary keys generated via `gen_random_uuid()`
 - Project delete cascades to permits, tasks, notes
-- Real data: 2,281 projects, 1,377 permits, 103 tasks, 383 notes, 26 users
-- Project statuses: Active (188), Closed (2,024), Construction (61), On Hold (8), Proposal (14)
+- Real data: 2,281 projects, 1,377 permits, 103 tasks, 383 notes, 30 users (19 authorized)
 
 ## API Pattern
 - `apiRequest(method, url, data)` from `@/lib/queryClient`
 - All routes prefixed with `/api/`
-- Seed data checks for existing users to avoid duplicates
+- Auth routes: `/api/auth/request-code`, `/api/auth/verify-code`, `/api/auth/me`, `/api/auth/logout`
+- Protected routes require valid session (401 without)
+- Write routes require specific roles (403 without)
 
 ## Styling
 - Custom sidebar: `bg-[#0c0054]` with amber active states
 - Uses shadcn elevation system (`hover-elevate`)
 - Font: Open Sans
 - Primary color: blue (217 91% 60%)
+
+## Secrets
+- `DATABASE_URL` — PostgreSQL connection
+- `SESSION_SECRET` — Express session encryption
+- `RESEND_API_KEY` — Email OTP delivery via Resend
 
 ## Dev Commands
 - `npm run dev` — Start dev server

@@ -15,8 +15,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo, useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 
 export default function ProjectsList() {
+  const { isAdmin } = useAuth();
   const { data: projects = [], isLoading: pLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
@@ -116,11 +118,13 @@ export default function ProjectsList() {
             {filteredProjects.length} of {projects.length} records
           </p>
         </div>
-        <Link href="/projects/new">
-          <Button size="sm" data-testid="button-new-project">
-            <Plus size={14} className="mr-1" /> New Project
-          </Button>
-        </Link>
+        {isAdmin && (
+          <Link href="/projects/new">
+            <Button size="sm" data-testid="button-new-project">
+              <Plus size={14} className="mr-1" /> New Project
+            </Button>
+          </Link>
+        )}
       </div>
 
       <div className="relative">

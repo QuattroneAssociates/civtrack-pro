@@ -8,12 +8,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 
 export default function ProjectForm() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
   const isEdit = !!params.id;
+
+  useEffect(() => {
+    if (!isAdmin) navigate("/projects");
+  }, [isAdmin, navigate]);
 
   const { data: users = [] } = useQuery<User[]>({ queryKey: ["/api/users"] });
   const { data: existingProject } = useQuery<Project>({

@@ -8,7 +8,17 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   role: text("role").notNull(),
   email: text("email").notNull().unique(),
+  loginEmail: text("login_email").unique(),
+  authRole: text("auth_role"),
   isActive: boolean("is_active").notNull().default(true),
+});
+
+export const authCodes = pgTable("auth_codes", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull(),
+  code: text("code").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").notNull().default(false),
 });
 
 export const projects = pgTable("projects", {
@@ -108,6 +118,7 @@ export const auditLogs = pgTable("audit_logs", {
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
+export const insertAuthCodeSchema = createInsertSchema(authCodes).omit({ id: true });
 export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, lastUpdatedDate: true });
 export const insertPermitSchema = createInsertSchema(permits).omit({ id: true });
 export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, dateAssigned: true });
@@ -116,6 +127,8 @@ export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: tru
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertAuthCode = z.infer<typeof insertAuthCodeSchema>;
+export type AuthCode = typeof authCodes.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projects.$inferSelect;
 export type InsertPermit = z.infer<typeof insertPermitSchema>;

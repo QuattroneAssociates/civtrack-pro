@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard,
@@ -11,25 +11,32 @@ import {
   HardHat,
   PanelLeftClose,
   PanelLeftOpen,
-  ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { Task, Permit, Project } from "@shared/schema";
+import type { Task, Permit } from "@shared/schema";
 import { parseDateSafe } from "@/lib/dateUtils";
+import { useAuth } from "@/lib/auth";
 
-const navItems = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/projects", label: "Projects", icon: FolderKanban },
-  { path: "/tasks", label: "Tasks", icon: CheckSquare },
-  { path: "/alerts", label: "Alerts", icon: Bell },
-  { path: "/calendar", label: "Calendar", icon: CalendarDays },
-  { path: "/reports", label: "Reports", icon: BarChart3 },
-  { path: "/users", label: "Team", icon: Users },
+const allNavItems = [
+  { path: "/", label: "Dashboard", icon: LayoutDashboard, roles: null },
+  { path: "/projects", label: "Projects", icon: FolderKanban, roles: null },
+  { path: "/tasks", label: "Tasks", icon: CheckSquare, roles: null },
+  { path: "/alerts", label: "Alerts", icon: Bell, roles: null },
+  { path: "/calendar", label: "Calendar", icon: CalendarDays, roles: null },
+  { path: "/reports", label: "Reports", icon: BarChart3, roles: ["admin"] as string[] },
+  { path: "/users", label: "Team", icon: Users, roles: ["admin"] as string[] },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { user, logout, hasRole } = useAuth();
+
+  const navItems = useMemo(
+    () => allNavItems.filter((item) => !item.roles || hasRole(...item.roles)),
+    [hasRole]
+  );
 
   const { data: tasks = [] } = useQuery<Task[]>({ queryKey: ["/api/tasks"] });
   const { data: permits = [] } = useQuery<Permit[]>({ queryKey: ["/api/permits"] });
@@ -55,6 +62,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (path === "/alerts") return alertCount || undefined;
     return undefined;
   };
+
+  const firstName = user?.name?.split(" ")[0] || "User";
 
   return (
     <div className="flex h-screen w-full bg-background" data-testid="app-layout">
@@ -123,11 +132,43 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="px-3 py-4 border-t border-white/10">
-          {sidebarOpen && (
-            <div className="px-3 py-2">
+          {sidebarOpen ? (
+            <div className="px-3 py-2 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-300 text-[10px] font-black flex-shrink-0">
+                  {firstName[0]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold text-white/90 truncate" data-testid="text-user-name">
+                    {user?.name}
+                  </p>
+                  <p className="text-[9px] text-blue-300/50 truncate capitalize" data-testid="text-user-role">
+                    {user?.authRole?.replace("_", " ")}
+                  </p>
+                </div>
+                <button
+                  onClick={logout}
+                  className="p-1.5 rounded-md text-blue-300/40 hover:text-rose-300 hover:bg-white/5 transition-colors"
+                  title="Sign out"
+                  data-testid="button-logout"
+                >
+                  <LogOut size={14} />
+                </button>
+              </div>
               <p className="text-[8px] font-bold text-blue-300/40 uppercase tracking-[0.2em]">
                 Quattrone & Associates
               </p>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <button
+                onClick={logout}
+                className="p-2 rounded-md text-blue-300/40 hover:text-rose-300 hover:bg-white/5 transition-colors"
+                title="Sign out"
+                data-testid="button-logout-collapsed"
+              >
+                <LogOut size={16} />
+              </button>
             </div>
           )}
         </div>
@@ -150,7 +191,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <PanelLeftOpen size={18} />
               )}
             </button>
-
           </div>
         </header>
 

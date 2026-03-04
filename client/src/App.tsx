@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import ProjectsList from "@/pages/projects-list";
@@ -13,7 +14,9 @@ import Alerts from "@/pages/alerts";
 import CalendarPage from "@/pages/calendar-page";
 import Reports from "@/pages/reports";
 import UserDirectory from "@/pages/user-directory";
+import LoginPage from "@/pages/login";
 import AppLayout from "@/components/app-layout";
+import { Loader2 } from "lucide-react";
 
 function Router() {
   return (
@@ -33,13 +36,38 @@ function Router() {
   );
 }
 
+function AuthenticatedApp() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0c0054]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={32} className="animate-spin text-amber-400" />
+          <p className="text-white/60 text-sm font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return (
+    <AppLayout>
+      <Router />
+    </AppLayout>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AppLayout>
-          <Router />
-        </AppLayout>
+        <AuthProvider>
+          <AuthenticatedApp />
+        </AuthProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

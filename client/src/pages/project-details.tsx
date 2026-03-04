@@ -24,11 +24,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState, useMemo } from "react";
+import { useAuth } from "@/lib/auth";
 
 export default function ProjectDetails() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { isAdmin, hasRole } = useAuth();
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", params.id],
@@ -102,26 +104,28 @@ export default function ProjectDetails() {
             {project.name}
           </h2>
         </div>
-        <div className="flex items-center gap-2">
-          <Link href={`/projects/${project.id}/edit`}>
-            <Button variant="outline" size="sm" data-testid="button-edit-project">
-              <Pencil size={12} className="mr-1" /> Edit
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <Link href={`/projects/${project.id}/edit`}>
+              <Button variant="outline" size="sm" data-testid="button-edit-project">
+                <Pencil size={12} className="mr-1" /> Edit
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive"
+              onClick={() => {
+                if (confirm("Delete this project? This cannot be undone.")) {
+                  deleteMutation.mutate();
+                }
+              }}
+              data-testid="button-delete-project"
+            >
+              <Trash2 size={12} className="mr-1" /> Delete
             </Button>
-          </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-destructive"
-            onClick={() => {
-              if (confirm("Delete this project? This cannot be undone.")) {
-                deleteMutation.mutate();
-              }
-            }}
-            data-testid="button-delete-project"
-          >
-            <Trash2 size={12} className="mr-1" /> Delete
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
 
       <Tabs defaultValue="permits" className="w-full">
@@ -303,6 +307,8 @@ function PermitSection({
   permits: Permit[];
 }) {
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
+  const canEdit = isAdmin;
   const [showForm, setShowForm] = useState(false);
   const [editingPermit, setEditingPermit] = useState<Permit | null>(null);
   const [permitSearch, setPermitSearch] = useState("");
@@ -464,9 +470,11 @@ function PermitSection({
               data-testid="input-permit-search"
             />
           </div>
-          <Button size="sm" onClick={() => openForm()} data-testid="button-add-permit">
-            <Plus size={12} className="mr-1" /> Add
-          </Button>
+          {canEdit && (
+            <Button size="sm" onClick={() => openForm()} data-testid="button-add-permit">
+              <Plus size={12} className="mr-1" /> Add
+            </Button>
+          )}
         </div>
       </div>
 
@@ -608,7 +616,7 @@ function PermitSection({
               <col className="w-[8%]" />
               <col className="w-[8%]" />
               <col className="w-[8%]" />
-              <col className="w-[6%]" />
+              {canEdit && <col className="w-[6%]" />}
             </colgroup>
             <thead>
               <tr className="border-b bg-muted/30">
@@ -622,7 +630,7 @@ function PermitSection({
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Resub 2</th>
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Apprvl</th>
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Expir</th>
-                <th className="px-1 py-2"></th>
+                {canEdit && <th className="px-1 py-2"></th>}
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -638,30 +646,32 @@ function PermitSection({
                   <td className="px-2 py-2 tabular-nums">{shortDate(permit.resubmittal2Date)}</td>
                   <td className="px-2 py-2 tabular-nums">{shortDate(permit.approvalDate)}</td>
                   <td className="px-2 py-2 tabular-nums">{shortDate(permit.expirationDate)}</td>
-                  <td className="px-1 py-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" data-testid={`button-permit-menu-${permit.id}`}>
-                          <MoreHorizontal size={14} className="text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openForm(permit)} data-testid={`button-edit-permit-${permit.id}`}>
-                          <Pencil size={12} /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => {
-                            if (confirm("Delete this permit?"))
-                              deleteMutation.mutate(permit.id);
-                          }}
-                          data-testid={`button-delete-permit-${permit.id}`}
-                        >
-                          <Trash2 size={12} /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
+                  {canEdit && (
+                    <td className="px-1 py-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" data-testid={`button-permit-menu-${permit.id}`}>
+                            <MoreHorizontal size={14} className="text-muted-foreground" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openForm(permit)} data-testid={`button-edit-permit-${permit.id}`}>
+                            <Pencil size={12} /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => {
+                              if (confirm("Delete this permit?"))
+                                deleteMutation.mutate(permit.id);
+                            }}
+                            data-testid={`button-delete-permit-${permit.id}`}
+                          >
+                            <Trash2 size={12} /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -689,6 +699,8 @@ function TaskSection({
   users: User[];
 }) {
   const { toast } = useToast();
+  const { hasRole } = useAuth();
+  const canManageTasks = hasRole("admin", "project_manager");
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -758,13 +770,15 @@ function TaskSection({
         <h3 className="text-xs font-black uppercase tracking-widest">
           Task Ledger
         </h3>
-        <Button
-          size="sm"
-          onClick={() => setShowForm(true)}
-          data-testid="button-add-task"
-        >
-          <Plus size={12} className="mr-1" /> New Task
-        </Button>
+        {canManageTasks && (
+          <Button
+            size="sm"
+            onClick={() => setShowForm(true)}
+            data-testid="button-add-task"
+          >
+            <Plus size={12} className="mr-1" /> New Task
+          </Button>
+        )}
       </div>
 
       {showForm && (
@@ -965,6 +979,8 @@ function NoteSection({
   users: User[];
 }) {
   const { toast } = useToast();
+  const { hasRole } = useAuth();
+  const canAddNotes = hasRole("admin", "project_manager");
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     type: "General",
@@ -1005,13 +1021,15 @@ function NoteSection({
         <h3 className="text-xs font-black uppercase tracking-widest">
           Project Notes
         </h3>
-        <Button
-          size="sm"
-          onClick={() => setShowForm(true)}
-          data-testid="button-add-note"
-        >
-          <Plus size={12} className="mr-1" /> New Entry
-        </Button>
+        {canAddNotes && (
+          <Button
+            size="sm"
+            onClick={() => setShowForm(true)}
+            data-testid="button-add-note"
+          >
+            <Plus size={12} className="mr-1" /> New Entry
+          </Button>
+        )}
       </div>
 
       {showForm && (
@@ -1078,17 +1096,19 @@ function NoteSection({
                       {formatDate(note.date)}
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive"
-                    onClick={() => {
-                      if (confirm("Delete this note?"))
-                        deleteMutation.mutate(note.id);
-                    }}
-                  >
-                    <Trash2 size={12} />
-                  </Button>
+                  {canAddNotes && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive"
+                      onClick={() => {
+                        if (confirm("Delete this note?"))
+                          deleteMutation.mutate(note.id);
+                      }}
+                    >
+                      <Trash2 size={12} />
+                    </Button>
+                  )}
                 </div>
                 <p className="text-sm mt-2 leading-relaxed whitespace-pre-wrap">
                   {note.body}
