@@ -32,7 +32,7 @@ Full-stack civil engineering project management application migrated from a Goog
 - `client/src/App.tsx` — Route definitions with AuthProvider wrapper
 - `client/src/lib/auth.tsx` — AuthContext provider (user state, login/logout, hasRole helper)
 - `client/src/pages/login.tsx` — Email OTP login page (two-step: email → code)
-- `client/src/components/app-layout.tsx` — Sidebar layout with role-based nav and logout
+- `client/src/components/app-layout.tsx` — Responsive layout: desktop sidebar + mobile bottom tab bar (5 tabs: Dashboard, Projects, Tasks, Calendar, Alerts) with hamburger slide-out menu for extras (Reports, Personnel, user info, logout)
 
 ## Pages
 - `/` — Dashboard (metrics, active projects, deadline radar)
