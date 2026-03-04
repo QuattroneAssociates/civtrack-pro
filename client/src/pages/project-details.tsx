@@ -14,7 +14,15 @@ import {
   MapPin, UserCheck, Landmark, ExternalLink, Folder, Pencil,
   Trash2, Plus, Calendar, FileText, ClipboardList, MessageSquare,
   CheckCircle2, AlertTriangle, Clock, ArrowLeft, Phone, Mail,
+  Search, MoreHorizontal,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState, useMemo } from "react";
 
 export default function ProjectDetails() {
@@ -116,119 +124,119 @@ export default function ProjectDetails() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-1 space-y-4">
-          <Card className="border-card-border">
-            <CardContent className="p-5 space-y-4">
-              <div>
-                <h4 className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">
-                  Key Details
-                </h4>
-                <div className="space-y-3">
-                  <InfoRow
-                    icon={<UserCheck size={14} />}
-                    label="Project Manager"
-                    value={pm?.name || "Unassigned"}
-                  />
-                  <InfoRow
-                    icon={<Landmark size={14} />}
-                    label="Jurisdiction"
-                    value={project.agency}
-                  />
-                  <InfoRow
-                    icon={<MapPin size={14} />}
-                    label="Address"
-                    value={project.address}
-                  />
-                  <div className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400">
-                    Strap: {project.strapNumber}
+      <Tabs defaultValue="permits" className="w-full">
+        <TabsList className="w-full justify-start">
+          <TabsTrigger value="permits" className="text-xs" data-testid="tab-permits">
+            <FileText size={12} className="mr-1" /> Permits ({permits.length})
+          </TabsTrigger>
+          <TabsTrigger value="tasks" className="text-xs" data-testid="tab-tasks">
+            <ClipboardList size={12} className="mr-1" /> Tasks ({tasks.length})
+          </TabsTrigger>
+          <TabsTrigger value="notes" className="text-xs" data-testid="tab-notes">
+            <MessageSquare size={12} className="mr-1" /> Notes ({projectNotes.length})
+          </TabsTrigger>
+          <TabsTrigger value="details" className="text-xs" data-testid="tab-details">
+            <Landmark size={12} className="mr-1" /> Details
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="permits" className="mt-4">
+          <PermitSection
+            projectId={project.id}
+            permits={permits}
+          />
+        </TabsContent>
+        <TabsContent value="tasks" className="mt-4">
+          <TaskSection
+            projectId={project.id}
+            tasks={tasks}
+            users={users}
+          />
+        </TabsContent>
+        <TabsContent value="notes" className="mt-4">
+          <NoteSection
+            projectId={project.id}
+            notes={projectNotes}
+            users={users}
+          />
+        </TabsContent>
+        <TabsContent value="details" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <Card className="border-card-border">
+              <CardContent className="p-5 space-y-4">
+                <div>
+                  <h4 className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">
+                    Key Details
+                  </h4>
+                  <div className="space-y-3">
+                    <InfoRow
+                      icon={<UserCheck size={14} />}
+                      label="Project Manager"
+                      value={pm?.name || "Unassigned"}
+                    />
+                    <InfoRow
+                      icon={<Landmark size={14} />}
+                      label="Jurisdiction"
+                      value={project.agency}
+                    />
+                    <InfoRow
+                      icon={<MapPin size={14} />}
+                      label="Address"
+                      value={project.address}
+                    />
+                    <div className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400">
+                      Strap: {project.strapNumber}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="border-t pt-3">
-                <h4 className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">
-                  Client
-                </h4>
-                <p className="text-sm font-bold">{project.clientName}</p>
-                {project.clientEmail && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                    <Mail size={10} /> {project.clientEmail}
-                  </div>
-                )}
-                {project.clientMobile && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                    <Phone size={10} /> {project.clientMobile}
-                  </div>
-                )}
-              </div>
-
-              {project.description && (
                 <div className="border-t pt-3">
                   <h4 className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">
-                    Description
+                    Client
                   </h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {project.description}
-                  </p>
+                  <p className="text-sm font-bold">{project.clientName}</p>
+                  {project.clientEmail && (
+                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                      <Mail size={10} /> {project.clientEmail}
+                    </div>
+                  )}
+                  {project.clientMobile && (
+                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                      <Phone size={10} /> {project.clientMobile}
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {project.oneDriveFolder && (
-                <a
-                  href={project.oneDriveFolder}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-md text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 transition-colors"
-                >
-                  <Folder size={14} />
-                  <span className="flex-1">Open OneDrive Folder</span>
-                  <ExternalLink size={10} />
-                </a>
-              )}
-            </CardContent>
-          </Card>
+                {project.description && (
+                  <div className="border-t pt-3">
+                    <h4 className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">
+                      Description
+                    </h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {project.description}
+                    </p>
+                  </div>
+                )}
 
-          <SubConsultants project={project} />
-        </div>
+                {project.oneDriveFolder && (
+                  <a
+                    href={project.oneDriveFolder}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-md text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 transition-colors"
+                  >
+                    <Folder size={14} />
+                    <span className="flex-1">Open OneDrive Folder</span>
+                    <ExternalLink size={10} />
+                  </a>
+                )}
+              </CardContent>
+            </Card>
 
-        <div className="lg:col-span-2">
-          <Tabs defaultValue="permits" className="w-full">
-            <TabsList className="w-full justify-start">
-              <TabsTrigger value="permits" className="text-xs" data-testid="tab-permits">
-                <FileText size={12} className="mr-1" /> Permits ({permits.length})
-              </TabsTrigger>
-              <TabsTrigger value="tasks" className="text-xs" data-testid="tab-tasks">
-                <ClipboardList size={12} className="mr-1" /> Tasks ({tasks.length})
-              </TabsTrigger>
-              <TabsTrigger value="notes" className="text-xs" data-testid="tab-notes">
-                <MessageSquare size={12} className="mr-1" /> Notes ({projectNotes.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="permits" className="mt-4">
-              <PermitSection
-                projectId={project.id}
-                permits={permits}
-              />
-            </TabsContent>
-            <TabsContent value="tasks" className="mt-4">
-              <TaskSection
-                projectId={project.id}
-                tasks={tasks}
-                users={users}
-              />
-            </TabsContent>
-            <TabsContent value="notes" className="mt-4">
-              <NoteSection
-                projectId={project.id}
-                notes={projectNotes}
-                users={users}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+            <SubConsultants project={project} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -297,6 +305,7 @@ function PermitSection({
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editingPermit, setEditingPermit] = useState<Permit | null>(null);
+  const [permitSearch, setPermitSearch] = useState("");
   const [formData, setFormData] = useState({
     type: "",
     number: "",
@@ -315,6 +324,16 @@ function PermitSection({
     feeAmount: "",
     submittalNotes: "",
   });
+
+  const filteredPermits = useMemo(() => {
+    if (!permitSearch.trim()) return permits;
+    const q = permitSearch.toLowerCase().trim();
+    return permits.filter(
+      (p) =>
+        p.type.toLowerCase().includes(q) ||
+        (p.number && p.number.toLowerCase().includes(q))
+    );
+  }, [permits, permitSearch]);
 
   const openForm = (permit?: Permit) => {
     if (permit) {
@@ -421,15 +440,34 @@ function PermitSection({
     }
   };
 
+  const shortDate = (val: string | null | undefined) => {
+    if (!val) return "";
+    const d = parseDateSafe(val);
+    if (!d) return "";
+    return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-black uppercase tracking-widest">
-          Permit Matrix
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="text-lg font-black tracking-tight">
+          Permit Requirements
         </h3>
-        <Button size="sm" onClick={() => openForm()} data-testid="button-add-permit">
-          <Plus size={12} className="mr-1" /> Add Permit
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search"
+              value={permitSearch}
+              onChange={(e) => setPermitSearch(e.target.value)}
+              className="pl-9 w-48 text-sm"
+              data-testid="input-permit-search"
+            />
+          </div>
+          <Button size="sm" onClick={() => openForm()} data-testid="button-add-permit">
+            <Plus size={12} className="mr-1" /> Add
+          </Button>
+        </div>
       </div>
 
       {showForm && (
@@ -479,6 +517,38 @@ function PermitSection({
                   }
                 />
                 <FormField
+                  label="Comments 1 Date"
+                  type="date"
+                  value={formData.comments1Date}
+                  onChange={(v) =>
+                    setFormData({ ...formData, comments1Date: v })
+                  }
+                />
+                <FormField
+                  label="Resubmittal 1 Date"
+                  type="date"
+                  value={formData.resubmittal1Date}
+                  onChange={(v) =>
+                    setFormData({ ...formData, resubmittal1Date: v })
+                  }
+                />
+                <FormField
+                  label="Comments 2 Date"
+                  type="date"
+                  value={formData.comments2Date}
+                  onChange={(v) =>
+                    setFormData({ ...formData, comments2Date: v })
+                  }
+                />
+                <FormField
+                  label="Resubmittal 2 Date"
+                  type="date"
+                  value={formData.resubmittal2Date}
+                  onChange={(v) =>
+                    setFormData({ ...formData, resubmittal2Date: v })
+                  }
+                />
+                <FormField
                   label="Approval Date"
                   type="date"
                   value={formData.approvalDate}
@@ -524,83 +594,71 @@ function PermitSection({
         </Card>
       )}
 
-      {permits.length > 0 ? (
-        <div className="space-y-3">
-          {permits.map((permit) => (
-            <Card key={permit.id} className="border-card-border">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold">{permit.type}</span>
-                      {permit.number && (
-                        <span className="text-[10px] font-mono text-muted-foreground">
-                          #{permit.number}
-                        </span>
-                      )}
-                      <AppStatusBadge status={permit.applicationStatus} />
-                    </div>
-                    {permit.description && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {permit.description}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-muted-foreground">
-                      {permit.targetDate && (
-                        <span>Target: {formatDate(permit.targetDate)}</span>
-                      )}
-                      {permit.submittalDate && (
-                        <span>
-                          Submitted: {formatDate(permit.submittalDate)}
-                        </span>
-                      )}
-                      {permit.approvalDate && (
-                        <span>
-                          Approved: {formatDate(permit.approvalDate)}
-                        </span>
-                      )}
-                      {permit.expirationDate && (
-                        <span>
-                          Expires: {formatDate(permit.expirationDate)}
-                        </span>
-                      )}
-                      {permit.feeAmount && (
-                        <span>Fee: {permit.feeAmount}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openForm(permit)}
-                      data-testid={`button-edit-permit-${permit.id}`}
-                    >
-                      <Pencil size={12} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      onClick={() => {
-                        if (confirm("Delete this permit?"))
-                          deleteMutation.mutate(permit.id);
-                      }}
-                      data-testid={`button-delete-permit-${permit.id}`}
-                    >
-                      <Trash2 size={12} />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      {filteredPermits.length > 0 ? (
+        <div className="overflow-x-auto rounded-lg border border-card-border">
+          <table className="w-full text-xs" data-testid="permit-table">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Permit Type</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Permit #</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Target</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Submittal</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Comments 1</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Resubmittal 1</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Comments 2</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Resubmittal 2</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Approval</th>
+                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Expiration</th>
+                <th className="w-10 px-2 py-2.5"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {filteredPermits.map((permit) => (
+                <tr key={permit.id} className="hover:bg-muted/20 transition-colors" data-testid={`row-permit-${permit.id}`}>
+                  <td className="px-3 py-2.5 font-semibold whitespace-nowrap">{permit.type}</td>
+                  <td className="px-3 py-2.5 font-mono text-muted-foreground whitespace-nowrap">{permit.number || ""}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.targetDate)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.submittalDate)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.comments1Date)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.resubmittal1Date)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.comments2Date)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.resubmittal2Date)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.approvalDate)}</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.expirationDate)}</td>
+                  <td className="px-2 py-2.5">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" data-testid={`button-permit-menu-${permit.id}`}>
+                          <MoreHorizontal size={14} className="text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openForm(permit)} data-testid={`button-edit-permit-${permit.id}`}>
+                          <Pencil size={12} /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => {
+                            if (confirm("Delete this permit?"))
+                              deleteMutation.mutate(permit.id);
+                          }}
+                          data-testid={`button-delete-permit-${permit.id}`}
+                        >
+                          <Trash2 size={12} /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="py-16 text-center border-2 border-dashed rounded-lg">
           <FileText size={32} className="mx-auto mb-2 text-muted-foreground/30" />
           <p className="text-xs font-bold text-muted-foreground">
-            No permits on file
+            {permitSearch.trim() ? "No permits match your search" : "No permits on file"}
           </p>
         </div>
       )}
