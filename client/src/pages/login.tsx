@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [returnedCode, setReturnedCode] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cooldown, setCooldown] = useState(false);
 
@@ -22,9 +23,10 @@ export default function LoginPage() {
     if (!email.trim()) return;
     setIsSubmitting(true);
     try {
-      await requestCode(email.trim());
+      const otpCode = await requestCode(email.trim());
+      setReturnedCode(otpCode);
+      if (otpCode) setCode(otpCode);
       setStep("code");
-      toast({ title: "Code sent", description: "Check your email for the access code." });
     } catch (err: any) {
       const msg = err.message?.includes("403")
         ? "This email is not authorized to access CivTrack Pro."
@@ -56,8 +58,9 @@ export default function LoginPage() {
     if (cooldown) return;
     setCooldown(true);
     try {
-      await requestCode(email.trim());
-      toast({ title: "Code resent", description: "Check your email for the new code." });
+      const otpCode = await requestCode(email.trim());
+      setReturnedCode(otpCode);
+      if (otpCode) setCode(otpCode);
     } catch {
       toast({ title: "Error", description: "Failed to resend code.", variant: "destructive" });
     }
@@ -122,9 +125,15 @@ export default function LoginPage() {
             </form>
           ) : (
             <form onSubmit={handleVerify} className="space-y-5">
+              {returnedCode && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center" data-testid="display-code">
+                  <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2">Your Access Code</p>
+                  <p className="text-3xl font-black tracking-[0.3em] text-[#0c0054]">{returnedCode}</p>
+                </div>
+              )}
               <div className="text-center mb-2">
                 <p className="text-sm text-gray-600">
-                  We sent a 6-digit code to
+                  Enter the code to sign in as
                 </p>
                 <p className="text-sm font-bold text-[#0c0054]" data-testid="text-sent-email">
                   {email}
@@ -166,6 +175,7 @@ export default function LoginPage() {
                   onClick={() => {
                     setStep("email");
                     setCode("");
+                    setReturnedCode(null);
                   }}
                   className="flex items-center gap-1 text-gray-500 hover:text-[#0c0054] transition-colors"
                   data-testid="button-back"

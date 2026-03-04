@@ -41,10 +41,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const requestCode = useCallback(async (email: string) => {
+  const requestCode = useCallback(async (email: string): Promise<string | null> => {
     const res = await apiRequest("POST", "/api/auth/request-code", { email });
     const data = await res.json();
-    return data;
+    return data.code || null;
   }, []);
 
   const login = useCallback(async (email: string, code: string) => {

@@ -64,31 +64,7 @@ export function setupAuth(app: Express) {
       used: false,
     });
 
-    try {
-      await resend.emails.send({
-        from: "CivTrack Pro <onboarding@resend.dev>",
-        to: normalizedEmail,
-        subject: "CivTrack Pro Login Code",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
-            <h1 style="text-align: center; color: #1a1a2e; font-size: 22px; margin-bottom: 4px;">Quattrone &amp; Associates, Inc.</h1>
-            <h2 style="text-align: center; color: #1a1a2e; font-size: 18px; font-weight: 600; margin-top: 0;">Your Access Pin</h2>
-            <p style="text-align: center; color: #555; font-size: 14px;">Please use the following code to sign in to CivTrack Pro.</p>
-            <div style="background: #f5f0e0; border-radius: 8px; padding: 24px; text-align: center; margin: 24px 0;">
-              <span style="font-size: 40px; font-weight: 900; letter-spacing: 6px; color: #1a1a2e;">${code}</span>
-            </div>
-            <p style="text-align: center; color: #999; font-size: 12px;">This code expires in 10 minutes.</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-            <p style="text-align: center; color: #999; font-size: 11px;">&copy; ${new Date().getFullYear()} Quattrone &amp; Associates, Inc. All rights reserved.</p>
-          </div>
-        `,
-      });
-    } catch (err: any) {
-      console.error("Resend email error:", err);
-      return res.status(500).json({ message: "Failed to send login code. Please try again." });
-    }
-
-    res.json({ message: "Code sent to your email" });
+    res.json({ message: "Code sent to your email", code });
   });
 
   app.post("/api/auth/verify-code", async (req: Request, res: Response) => {
