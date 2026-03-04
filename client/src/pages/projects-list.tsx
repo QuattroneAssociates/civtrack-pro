@@ -4,12 +4,13 @@ import type { Project, User, Permit } from "@shared/schema";
 import { StatusBadge } from "@/components/status-badge";
 import {
   ArrowUpRight,
-  Filter,
   Plus,
+  Search,
   SearchX,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -122,6 +123,17 @@ export default function ProjectsList() {
         </Link>
       </div>
 
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search by project #, name, client, address, or strap #..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 h-9 text-sm"
+          data-testid="input-project-search"
+        />
+      </div>
+
       <div className="flex flex-wrap items-center gap-2">
         {Object.entries(statusCounts).map(([status, count]) => (
           <button
@@ -161,6 +173,9 @@ export default function ProjectsList() {
                 const pm = users.find(
                   (u) => u.id === project.projectManagerId
                 );
+                const q = searchQuery.toLowerCase().trim();
+                const showAddress = q && project.address?.toLowerCase().includes(q);
+                const showStrap = q && project.strapNumber?.toLowerCase().includes(q);
                 return (
                   <Link key={project.id} href={`/projects/${project.id}`}>
                     <div
@@ -177,7 +192,7 @@ export default function ProjectsList() {
                         <p className="text-sm font-bold mt-0.5 truncate">
                           {project.name}
                         </p>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                           <span>{project.clientName}</span>
                           <span>&middot;</span>
                           <span>{project.agency}</span>
@@ -188,6 +203,16 @@ export default function ProjectsList() {
                             </>
                           )}
                         </div>
+                        {showAddress && project.address && project.address !== "TBD" && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                            <span className="font-semibold">Address:</span> {project.address}
+                          </p>
+                        )}
+                        {showStrap && project.strapNumber && project.strapNumber !== "TBD" && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                            <span className="font-semibold">Strap #:</span> {project.strapNumber}
+                          </p>
+                        )}
                       </div>
                       <ArrowUpRight
                         size={14}
