@@ -444,7 +444,7 @@ function PermitSection({
     if (!val) return "";
     const d = parseDateSafe(val);
     if (!d) return "";
-    return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+    return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "2-digit" });
   };
 
   return (
@@ -595,37 +595,50 @@ function PermitSection({
       )}
 
       {filteredPermits.length > 0 ? (
-        <div className="overflow-x-auto rounded-lg border border-card-border">
-          <table className="w-full text-xs" data-testid="permit-table">
+        <div className="rounded-lg border border-card-border">
+          <table className="w-full text-[11px] table-fixed" data-testid="permit-table">
+            <colgroup>
+              <col className="w-[18%]" />
+              <col className="w-[12%]" />
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[6%]" />
+            </colgroup>
             <thead>
               <tr className="border-b bg-muted/30">
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Permit Type</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Permit #</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Target</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Submittal</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Comments 1</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Resubmittal 1</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Comments 2</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Resubmittal 2</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Approval</th>
-                <th className="text-left px-3 py-2.5 font-black text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">Expiration</th>
-                <th className="w-10 px-2 py-2.5"></th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Type</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">#</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Target</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Submit</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Cmt 1</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Resub 1</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Cmt 2</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Resub 2</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Apprvl</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Expir</th>
+                <th className="px-1 py-2"></th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {filteredPermits.map((permit) => (
                 <tr key={permit.id} className="hover:bg-muted/20 transition-colors" data-testid={`row-permit-${permit.id}`}>
-                  <td className="px-3 py-2.5 font-semibold whitespace-nowrap">{permit.type}</td>
-                  <td className="px-3 py-2.5 font-mono text-muted-foreground whitespace-nowrap">{permit.number || ""}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.targetDate)}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.submittalDate)}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.comments1Date)}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.resubmittal1Date)}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.comments2Date)}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.resubmittal2Date)}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.approvalDate)}</td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{shortDate(permit.expirationDate)}</td>
-                  <td className="px-2 py-2.5">
+                  <td className="px-2 py-2 font-semibold truncate" title={permit.type}>{permit.type}</td>
+                  <td className="px-2 py-2 font-mono text-muted-foreground truncate" title={permit.number || ""}>{permit.number || ""}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.targetDate)}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.submittalDate)}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.comments1Date)}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.resubmittal1Date)}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.comments2Date)}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.resubmittal2Date)}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.approvalDate)}</td>
+                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.expirationDate)}</td>
+                  <td className="px-1 py-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-7 w-7" data-testid={`button-permit-menu-${permit.id}`}>
