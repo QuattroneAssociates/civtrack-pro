@@ -603,49 +603,36 @@ function PermitSection({
       )}
 
       {filteredPermits.length > 0 ? (
-        <div className="rounded-lg border border-card-border max-h-[70vh] overflow-y-auto">
-          <table className="w-full text-[11px] table-fixed" data-testid="permit-table">
-            <colgroup>
-              <col className="w-[18%]" />
-              <col className="w-[12%]" />
-              <col className="w-[8%]" />
-              <col className="w-[8%]" />
-              <col className="w-[8%]" />
-              <col className="w-[8%]" />
-              <col className="w-[8%]" />
-              <col className="w-[8%]" />
-              <col className="w-[8%]" />
-              <col className="w-[8%]" />
-              {canEdit && <col className="w-[6%]" />}
-            </colgroup>
+        <div className="rounded-lg border border-card-border max-h-[70vh] overflow-auto">
+          <table className="text-[11px] min-w-[800px] w-full" data-testid="permit-table">
             <thead className="sticky top-0 z-10">
               <tr className="border-b bg-background shadow-[0_1px_0_0_hsl(var(--border))]">
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Type</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">#</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Target</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Submit</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Cmt 1</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Resub 1</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Cmt 2</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Resub 2</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Apprvl</th>
-                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Expir</th>
-                {canEdit && <th className="px-1 py-2"></th>}
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[120px]">Type</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[80px]">#</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Target</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Submit</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Cmt 1</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Resub 1</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Cmt 2</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Resub 2</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Apprvl</th>
+                <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Expir</th>
+                {canEdit && <th className="px-1 py-2 min-w-[40px]"></th>}
               </tr>
             </thead>
             <tbody className="divide-y">
               {filteredPermits.map((permit) => (
                 <tr key={permit.id} className="hover:bg-muted/20 transition-colors" data-testid={`row-permit-${permit.id}`}>
-                  <td className="px-2 py-2 font-semibold truncate" title={permit.type}>{permit.type}</td>
-                  <td className="px-2 py-2 font-mono text-muted-foreground truncate" title={permit.number || ""}>{permit.number || ""}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.targetDate)}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.submittalDate)}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.comments1Date)}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.resubmittal1Date)}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.comments2Date)}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.resubmittal2Date)}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.approvalDate)}</td>
-                  <td className="px-2 py-2 tabular-nums">{shortDate(permit.expirationDate)}</td>
+                  <td className="px-2 py-2 font-semibold whitespace-nowrap" title={permit.type}>{permit.type}</td>
+                  <td className="px-2 py-2 font-mono text-muted-foreground whitespace-nowrap" title={permit.number || ""}>{permit.number || ""}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.targetDate)}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.submittalDate)}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.comments1Date)}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.resubmittal1Date)}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.comments2Date)}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.resubmittal2Date)}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.approvalDate)}</td>
+                  <td className="px-2 py-2 tabular-nums whitespace-nowrap">{shortDate(permit.expirationDate)}</td>
                   {canEdit && (
                     <td className="px-1 py-2">
                       <DropdownMenu>
