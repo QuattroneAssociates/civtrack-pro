@@ -15,8 +15,9 @@ import {
   Briefcase,
   ListTodo,
   LayoutGrid,
+  ChevronDown,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 
 type ViewMode = "board" | "active" | "archived";
@@ -36,20 +37,6 @@ export default function TasksList() {
 
   const canEditTasks = hasRole("admin", "project_manager");
 
-  const toggleMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      apiRequest("PATCH", `/api/tasks/${id}/status`, {
-        status,
-        dateCompleted:
-          status === "Completed"
-            ? new Date().toISOString().split("T")[0]
-            : null,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
-
   const counts = useMemo(() => {
     let base = [...tasks];
     if (assigneeFilter !== "All") {
@@ -58,17 +45,17 @@ export default function TasksList() {
       );
     }
     return {
-      active: base.filter((t) => t.status !== "Completed").length,
-      archived: base.filter((t) => t.status === "Completed").length,
+      active: base.filter((t) => t.status !== "Completed" && t.status !== "Complete").length,
+      archived: base.filter((t) => t.status === "Completed" || t.status === "Complete").length,
     };
   }, [tasks, assigneeFilter]);
 
   const filteredTasks = useMemo(() => {
     let filtered = [...tasks];
-    if (viewMode === "active" || viewMode === "board") {
-      filtered = filtered.filter((t) => t.status !== "Completed");
-    } else {
-      filtered = filtered.filter((t) => t.status === "Completed");
+    if (viewMode === "active") {
+      filtered = filtered.filter((t) => t.status !== "Completed" && t.status !== "Complete");
+    } else if (viewMode === "archived") {
+      filtered = filtered.filter((t) => t.status === "Completed" || t.status === "Complete");
     }
     if (assigneeFilter !== "All") {
       filtered = filtered.filter(
@@ -78,14 +65,33 @@ export default function TasksList() {
     return filtered;
   }, [tasks, viewMode, assigneeFilter]);
 
+  const STATUSES = ["Pending", "Assigned", "In Progress", "Complete"];
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      apiRequest("PATCH", `/api/tasks/${id}/status`, {
+        status,
+        dateCompleted:
+          status === "Complete" || status === "Completed"
+            ? new Date().toISOString().split("T")[0]
+            : null,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
   const boardColumns = useMemo(() => {
     if (viewMode !== "board") return {};
     const cols: Record<string, Task[]> = {
       Pending: [],
+      Assigned: [],
       "In Progress": [],
+      Complete: [],
     };
     filteredTasks.forEach((t) => {
-      const status = t.status || "Pending";
+      let status = t.status || "Pending";
+      if (status === "Completed") status = "Complete";
       if (!cols[status]) cols[status] = [];
       cols[status].push(t);
     });
@@ -162,7 +168,7 @@ export default function TasksList() {
       </div>
 
       {viewMode === "board" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Object.entries(boardColumns).map(([status, columnTasks]) => (
             <div key={status}>
               <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
@@ -178,10 +184,11 @@ export default function TasksList() {
                     task={task}
                     projects={projects}
                     canToggle={canToggleTask(task)}
-                    onToggle={() =>
-                      toggleMutation.mutate({
+                    statuses={STATUSES}
+                    onStatusChange={(newStatus) =>
+                      statusMutation.mutate({
                         id: task.id,
-                        status: "Completed",
+                        status: newStatus,
                       })
                     }
                   />
@@ -205,11 +212,11 @@ export default function TasksList() {
               task={task}
               projects={projects}
               canToggle={canToggleTask(task)}
-              onToggle={() =>
-                toggleMutation.mutate({
+              statuses={STATUSES}
+              onStatusChange={(newStatus) =>
+                statusMutation.mutate({
                   id: task.id,
-                  status:
-                    task.status === "Completed" ? "Pending" : "Completed",
+                  status: newStatus,
                 })
               }
             />
@@ -250,19 +257,94 @@ export default function TasksList() {
   );
 }
 
+const STATUS_COLORS: Record<string, string> = {
+  Pending: "bg-amber-100 text-amber-800 border-amber-200",
+  Assigned: "bg-blue-100 text-blue-800 border-blue-200",
+  "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
+  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
+};
+
+function StatusDropdown({
+  currentStatus,
+  statuses,
+  canToggle,
+  onStatusChange,
+}: {
+  currentStatus: string;
+  statuses: string[];
+  canToggle: boolean;
+  onStatusChange: (status: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const displayStatus = currentStatus === "Completed" ? "Complete" : currentStatus;
+  const colorClass = STATUS_COLORS[currentStatus] || STATUS_COLORS["Pending"];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => canToggle && setOpen(!open)}
+        disabled={!canToggle}
+        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-colors ${colorClass} ${
+          canToggle ? "cursor-pointer hover:opacity-80" : "cursor-not-allowed opacity-60"
+        }`}
+        data-testid={`button-status-${displayStatus.toLowerCase().replace(/\s+/g, "-")}`}
+        title={canToggle ? "Change status" : "Only the assigned person can change this task's status"}
+      >
+        {displayStatus}
+        {canToggle && <ChevronDown size={10} />}
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 left-0 bg-card border rounded-md shadow-lg py-1 min-w-[120px]" data-testid="dropdown-status-options">
+          {statuses.map((s) => (
+            <button
+              key={s}
+              onClick={() => {
+                onStatusChange(s === "Complete" ? "Completed" : s);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-[11px] font-medium hover:bg-muted transition-colors flex items-center gap-2 ${
+                (displayStatus === s) ? "bg-muted/50 font-bold" : ""
+              }`}
+              data-testid={`option-status-${s.toLowerCase().replace(/\s+/g, "-")}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${STATUS_COLORS[s]?.split(" ")[0] || "bg-gray-300"}`} />
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TaskCard({
   task,
   projects,
   canToggle,
-  onToggle,
+  statuses,
+  onStatusChange,
 }: {
   task: Task;
   projects: Project[];
   canToggle: boolean;
-  onToggle: () => void;
+  statuses: string[];
+  onStatusChange: (status: string) => void;
 }) {
   const project = projects.find((p) => p.id === task.projectId);
-  const isComplete = task.status === "Completed";
+  const isComplete = task.status === "Completed" || task.status === "Complete";
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const dueDate = parseDateSafe(task.dueDate);
@@ -276,23 +358,8 @@ function TaskCard({
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <button
-            onClick={canToggle ? onToggle : undefined}
-            disabled={!canToggle}
-            className={`mt-0.5 flex-shrink-0 transition-colors ${
-              isComplete
-                ? "text-emerald-500"
-                : canToggle
-                ? "text-muted-foreground/40 hover:text-emerald-400"
-                : "text-muted-foreground/20 cursor-not-allowed"
-            }`}
-            data-testid={`button-toggle-task-${task.id}`}
-            title={canToggle ? "Mark complete" : "Only the assigned person can complete this task"}
-          >
-            <CheckCircle2 size={16} />
-          </button>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-start justify-between gap-2">
               <p
                 className={`text-sm font-bold ${
                   isComplete ? "line-through text-muted-foreground" : ""
@@ -306,6 +373,12 @@ function TaskCard({
                 )}
                 {task.name}
               </p>
+              <StatusDropdown
+                currentStatus={task.status}
+                statuses={statuses}
+                canToggle={canToggle}
+                onStatusChange={onStatusChange}
+              />
             </div>
             {task.description && (
               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">

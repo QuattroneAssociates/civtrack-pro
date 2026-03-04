@@ -19,7 +19,7 @@ Full-stack civil engineering project management application migrated from a Goog
 - **Permission Matrix**:
   - Admin: Full access (CRUD projects, permits, tasks, notes; see Reports & Team)
   - PM: Read projects, manage tasks/notes, no project CRUD, no Reports/Team
-  - Team Member: Read-only view, can only update own task status
+  - Team Member: Read-only view, can update own task status (Pending/Assigned/In Progress/Complete) via dropdown
 
 ## Key Files
 - `shared/schema.ts` — Database schema (users, projects, permits, tasks, notes, auditLogs, authCodes)
@@ -40,7 +40,7 @@ Full-stack civil engineering project management application migrated from a Goog
 - `/projects/new` — Create project form (admin only)
 - `/projects/:id` — Project details (permit matrix, task ledger, notes tabs)
 - `/projects/:id/edit` — Edit project form (admin only)
-- `/tasks` — Task list with board/list/archive views
+- `/tasks` — Task list with board (4 columns: Pending/Assigned/In Progress/Complete), list, and archive views; status dropdown on each card
 - `/alerts` — Alert center (target deadlines, expirations, stagnant, unpaid fees)
 - `/calendar` — Calendar view for tasks and permit expirations
 - `/reports` — Analytics (admin only)

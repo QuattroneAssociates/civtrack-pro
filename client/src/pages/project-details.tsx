@@ -14,7 +14,7 @@ import {
   MapPin, UserCheck, Landmark, ExternalLink, Folder, Pencil,
   Trash2, Plus, Calendar, FileText, ClipboardList, MessageSquare,
   CheckCircle2, AlertTriangle, Clock, ArrowLeft, Phone, Mail,
-  Search, MoreHorizontal,
+  Search, MoreHorizontal, ChevronDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 
 export default function ProjectDetails() {
@@ -735,12 +735,14 @@ function TaskSection({
     },
   });
 
-  const toggleMutation = useMutation({
+  const STATUSES = ["Pending", "Assigned", "In Progress", "Complete"];
+
+  const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       apiRequest("PATCH", `/api/tasks/${id}/status`, {
         status,
         dateCompleted:
-          status === "Completed"
+          status === "Completed" || status === "Complete"
             ? new Date().toISOString().split("T")[0]
             : null,
       }),
@@ -862,10 +864,11 @@ function TaskSection({
               key={task.id}
               task={task}
               canToggle={canToggleTask(task)}
-              onToggle={() =>
-                toggleMutation.mutate({
+              statuses={STATUSES}
+              onStatusChange={(newStatus) =>
+                statusMutation.mutate({
                   id: task.id,
-                  status: "Completed",
+                  status: newStatus,
                 })
               }
             />
@@ -884,10 +887,11 @@ function TaskSection({
                 key={task.id}
                 task={task}
                 canToggle={canToggleTask(task)}
-                onToggle={() =>
-                  toggleMutation.mutate({
+                statuses={STATUSES}
+                onStatusChange={(newStatus) =>
+                  statusMutation.mutate({
                     id: task.id,
-                    status: "Pending",
+                    status: newStatus,
                   })
                 }
               />
@@ -911,16 +915,91 @@ function TaskSection({
   );
 }
 
+const TASK_STATUS_COLORS: Record<string, string> = {
+  Pending: "bg-amber-100 text-amber-800 border-amber-200",
+  Assigned: "bg-blue-100 text-blue-800 border-blue-200",
+  "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
+  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
+};
+
+function TaskStatusDropdown({
+  currentStatus,
+  statuses,
+  canToggle,
+  onStatusChange,
+}: {
+  currentStatus: string;
+  statuses: string[];
+  canToggle: boolean;
+  onStatusChange: (status: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const displayStatus = currentStatus === "Completed" ? "Complete" : currentStatus;
+  const colorClass = TASK_STATUS_COLORS[currentStatus] || TASK_STATUS_COLORS["Pending"];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => canToggle && setOpen(!open)}
+        disabled={!canToggle}
+        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-colors ${colorClass} ${
+          canToggle ? "cursor-pointer hover:opacity-80" : "cursor-not-allowed opacity-60"
+        }`}
+        data-testid={`button-status-${displayStatus.toLowerCase().replace(/\s+/g, "-")}`}
+        title={canToggle ? "Change status" : "Only the assigned person can change this task's status"}
+      >
+        {displayStatus}
+        {canToggle && <ChevronDown size={10} />}
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 left-0 bg-card border rounded-md shadow-lg py-1 min-w-[120px]" data-testid="dropdown-status-options">
+          {statuses.map((s) => (
+            <button
+              key={s}
+              onClick={() => {
+                onStatusChange(s === "Complete" ? "Completed" : s);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-[11px] font-medium hover:bg-muted transition-colors flex items-center gap-2 ${
+                (displayStatus === s) ? "bg-muted/50 font-bold" : ""
+              }`}
+              data-testid={`option-status-${s.toLowerCase().replace(/\s+/g, "-")}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${TASK_STATUS_COLORS[s]?.split(" ")[0] || "bg-gray-300"}`} />
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TaskRow({
   task,
-  onToggle,
   canToggle = true,
+  statuses,
+  onStatusChange,
 }: {
   task: Task;
-  onToggle: () => void;
   canToggle?: boolean;
+  statuses: string[];
+  onStatusChange: (status: string) => void;
 }) {
-  const isComplete = task.status === "Completed";
+  const isComplete = task.status === "Completed" || task.status === "Complete";
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const dueDate = parseDateSafe(task.dueDate);
@@ -934,35 +1013,28 @@ function TaskRow({
       }`}
       data-testid={`task-row-${task.id}`}
     >
-      <button
-        onClick={canToggle ? onToggle : undefined}
-        disabled={!canToggle}
-        className={`mt-0.5 flex-shrink-0 ${
-          isComplete
-            ? "text-emerald-500"
-            : canToggle
-            ? "text-muted-foreground/40 hover:text-emerald-400"
-            : "text-muted-foreground/20 cursor-not-allowed"
-        }`}
-        data-testid={`button-toggle-task-${task.id}`}
-        title={canToggle ? "Mark complete" : "Only the assigned person can complete this task"}
-      >
-        <CheckCircle2 size={16} />
-      </button>
       <div className="min-w-0 flex-1">
-        <p
-          className={`text-sm font-bold ${
-            isComplete ? "line-through text-muted-foreground" : ""
-          }`}
-        >
-          {task.isImportant && !isComplete && (
-            <AlertTriangle
-              size={12}
-              className="inline mr-1 text-rose-500"
-            />
-          )}
-          {task.name}
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <p
+            className={`text-sm font-bold ${
+              isComplete ? "line-through text-muted-foreground" : ""
+            }`}
+          >
+            {task.isImportant && !isComplete && (
+              <AlertTriangle
+                size={12}
+                className="inline mr-1 text-rose-500"
+              />
+            )}
+            {task.name}
+          </p>
+          <TaskStatusDropdown
+            currentStatus={task.status}
+            statuses={statuses}
+            canToggle={canToggle}
+            onStatusChange={onStatusChange}
+          />
+        </div>
         {task.description && (
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
             {task.description}

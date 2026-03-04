@@ -132,6 +132,11 @@ export async function registerRoutes(
     const { status, dateCompleted } = req.body;
     if (!status) return res.status(400).json({ message: "Status is required" });
 
+    const validStatuses = ["Pending", "Assigned", "In Progress", "Complete", "Completed"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
     const task = await storage.getTask(req.params.id);
     if (!task) return res.status(404).json({ message: "Task not found" });
 
