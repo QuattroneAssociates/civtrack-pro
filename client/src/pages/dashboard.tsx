@@ -6,10 +6,10 @@ import {
   LayoutGrid,
   Target,
   AlertTriangle,
-  ChevronRight,
-  ChevronLeft,
   Clock,
   FileText,
+  ChevronRight,
+  CalendarClock,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,12 +37,6 @@ function getDismissedIds(): string[] {
     return [];
   }
 }
-
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function Dashboard() {
   const { data: projects = [], isLoading: pLoading } = useQuery<Project[]>({
@@ -132,7 +126,7 @@ export default function Dashboard() {
       })
       .filter(Boolean)
       .sort((a, b) => b!.submitDate.getTime() - a!.submitDate.getTime())
-      .slice(0, 5) as Array<{
+      .slice(0, 8) as Array<{
       id: string;
       type: string;
       number: string;
@@ -155,10 +149,10 @@ export default function Dashboard() {
 
         if (p.targetDate && !p.submittalDate && !p.approvalDate) {
           dateToTrack = parseDateSafe(p.targetDate);
-          typeLabel = "Target Deadline";
+          typeLabel = "Target";
         } else if (p.expirationDate) {
           dateToTrack = parseDateSafe(p.expirationDate);
-          typeLabel = "Permit Expiration";
+          typeLabel = "Expiration";
         }
         if (!dateToTrack) return null;
         const diff = Math.ceil(
@@ -189,88 +183,68 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6" data-testid="dashboard-loading">
+      <div className="space-y-4" data-testid="dashboard-loading">
         <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-xl" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <Skeleton className="h-80 rounded-xl" />
-          <Skeleton className="h-80 rounded-xl" />
+        <Skeleton className="h-12 rounded-lg" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-64 rounded-xl" />
         </div>
       </div>
     );
   }
 
+  const statItems = [
+    { to: "/projects", label: "Projects", value: stats.total, color: "bg-[#2d3a4e]", icon: LayoutGrid },
+    { to: "/projects", label: "Active", value: stats.activeCount, color: "bg-[#c4917a]", icon: Target },
+    { to: "/alerts", label: "Unpaid Fees", value: stats.unpaidFees, color: "bg-[#8fa5b8]", icon: FileText },
+    { to: "/tasks", label: "Critical Tasks", value: stats.criticalTasks, color: "bg-[#c4917a]", icon: AlertTriangle },
+    { to: "/alerts", label: "Radar Alerts", value: stats.radarAlerts, color: "bg-[#8fa5b8]", icon: Clock },
+  ];
+
   return (
-    <div className="space-y-6" data-testid="dashboard-page">
+    <div className="space-y-4" data-testid="dashboard-page">
       <h2 className="text-xl font-black tracking-tight uppercase" data-testid="text-dashboard-title">
         Dashboard
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <MetricCard
-          to="/projects"
-          label="Total Projects"
-          sub="All Records"
-          value={stats.total}
-          icon={<LayoutGrid size={20} />}
-          accentColor="bg-[#2d3a4e]"
-        />
-        <MetricCard
-          to="/projects"
-          label="Active Pipeline"
-          sub="Ongoing Ops"
-          value={stats.activeCount}
-          icon={<Target size={20} />}
-          accentColor="bg-[#c4917a]"
-        />
-        <MetricCard
-          to="/alerts"
-          label="Unpaid Fees"
-          sub="Pending Payment"
-          value={stats.unpaidFees}
-          icon={<FileText size={20} />}
-          accentColor="bg-[#8fa5b8]"
-        />
-        <MetricCard
-          to="/tasks"
-          label="Critical Tasks"
-          sub="High Priority"
-          value={stats.criticalTasks}
-          icon={<AlertTriangle size={20} />}
-          accentColor="bg-[#c4917a]"
-        />
-        <MetricCard
-          to="/alerts"
-          label="Radar Alerts"
-          sub="Overdue Actions"
-          value={stats.radarAlerts}
-          icon={<Clock size={20} />}
-          accentColor="bg-[#8fa5b8]"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Card className="border-card-border rounded-xl">
-          <div className="px-5 py-4 border-b flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                <Clock size={14} className="text-muted-foreground" />
+      <div className="flex flex-wrap gap-2" data-testid="stats-strip">
+        {statItems.map((s) => (
+          <Link key={s.label} href={s.to}>
+            <div
+              className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg border bg-card hover:shadow-sm transition-all cursor-pointer"
+              data-testid={`metric-${s.label.toLowerCase().replace(/\s/g, "-")}`}
+            >
+              <div className={`w-7 h-7 rounded-full ${s.color} bg-opacity-10 flex items-center justify-center`}>
+                <s.icon size={13} className="text-foreground/50" />
               </div>
               <div>
-                <h3 className="text-xs font-black uppercase tracking-widest">
+                <p className="text-lg font-black leading-none tracking-tight">{s.value}</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{s.label}</p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="border-card-border rounded-xl">
+          <div className="px-4 py-3 border-b flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                <Clock size={12} className="text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-[11px] font-black uppercase tracking-widest">
                   Recently Submitted
                 </h3>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">
-                  Permits submitted in the last 14 days
+                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">
+                  Last 14 days
                 </p>
               </div>
             </div>
             <Link href="/alerts">
-              <Button variant="outline" size="sm" className="text-[10px] font-bold uppercase tracking-wider rounded-full" data-testid="link-view-all-submitted">
+              <Button variant="outline" size="sm" className="text-[9px] font-bold uppercase tracking-wider rounded-full h-7 px-3" data-testid="link-view-all-submitted">
                 View All
               </Button>
             </Link>
@@ -281,18 +255,18 @@ export default function Dashboard() {
                 {recentlySubmitted.map((item) => (
                   <Link key={item.id} href={`/projects/${item.projectId}`}>
                     <div
-                      className="px-5 py-3.5 flex items-center justify-between gap-4 cursor-pointer hover:bg-muted/30 transition-colors"
+                      className="px-4 py-2.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
                       data-testid={`row-submitted-${item.id}`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold truncate">
+                        <p className="text-[11px] font-semibold truncate">
                           {item.projectName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                        <p className="text-[9px] text-muted-foreground truncate">
                           {item.type}
                         </p>
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                      <span className="text-[9px] text-muted-foreground font-medium whitespace-nowrap">
                         {item.submitDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                     </div>
@@ -300,7 +274,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <div className="py-12 text-center">
+              <div className="py-10 text-center">
                 <p className="text-xs text-muted-foreground">
                   No permits submitted in the last 14 days
                 </p>
@@ -309,7 +283,89 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <DeadlineRadarCalendar deadlineItems={deadlineRadar} />
+        <Card className="border-card-border rounded-xl" data-testid="deadline-radar">
+          <div className="px-4 py-3 border-b flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                <CalendarClock size={12} className="text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-[11px] font-black uppercase tracking-widest">
+                  Deadline Radar
+                </h3>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">
+                  Upcoming deadlines &amp; expirations
+                </p>
+              </div>
+            </div>
+            <Link href="/alerts">
+              <Button variant="outline" size="sm" className="text-[9px] font-bold uppercase tracking-wider rounded-full h-7 px-3" data-testid="link-view-all-deadlines">
+                View All
+              </Button>
+            </Link>
+          </div>
+          <CardContent className="p-0">
+            {deadlineRadar.length > 0 ? (
+              <div className="divide-y">
+                {deadlineRadar.slice(0, 8).map((item) => {
+                  const urgencyClass =
+                    item.diff < 0
+                      ? "text-red-600 bg-red-50 border-red-200"
+                      : item.diff <= 7
+                      ? "text-amber-700 bg-amber-50 border-amber-200"
+                      : "text-slate-600 bg-slate-50 border-slate-200";
+                  const diffLabel =
+                    item.diff < 0
+                      ? `${Math.abs(item.diff)}d overdue`
+                      : item.diff === 0
+                      ? "Today"
+                      : item.diff === 1
+                      ? "Tomorrow"
+                      : `${item.diff}d`;
+                  return (
+                    <Link key={item.id} href={`/projects/${item.projectId}`}>
+                      <div
+                        className="px-4 py-2.5 flex items-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors group"
+                        data-testid={`row-deadline-${item.id}`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-semibold truncate">
+                            {item.projectName}
+                          </p>
+                          <p className="text-[9px] text-muted-foreground truncate">
+                            {item.typeLabel} · {item.type}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${urgencyClass}`}>
+                            {diffLabel}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground whitespace-nowrap">
+                            {item.dateToTrack.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </span>
+                          <button
+                            onClick={(e) => handleDismiss(item.id, item.projectName, e)}
+                            className="p-0.5 rounded text-muted-foreground/30 hover:text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Dismiss"
+                            data-testid={`button-dismiss-${item.id}`}
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-10 text-center">
+                <p className="text-xs text-muted-foreground">
+                  No upcoming deadlines
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <AlertDialog open={!!dismissTarget} onOpenChange={(open) => !open && setDismissTarget(null)}>
@@ -329,204 +385,5 @@ export default function Dashboard() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
-}
-
-function MetricCard({
-  to,
-  label,
-  value,
-  sub,
-  icon,
-  accentColor,
-}: {
-  to: string;
-  label: string;
-  value: number;
-  sub: string;
-  icon: React.ReactNode;
-  accentColor: string;
-}) {
-  return (
-    <Link href={to}>
-      <Card
-        className="cursor-pointer hover-elevate transition-all border-card-border rounded-xl"
-        data-testid={`metric-${label.toLowerCase().replace(/\s/g, "-")}`}
-      >
-        <CardContent className="p-5">
-          <div className="flex items-start justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center text-foreground/60">
-              {icon}
-            </div>
-          </div>
-          <p className="text-3xl font-black tracking-tight leading-none">{value}</p>
-          <div className="mt-2">
-            <div className={`h-1 w-12 rounded-full ${accentColor} opacity-60`} />
-          </div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.15em] mt-2">
-            {label}
-          </p>
-          <p className="text-[9px] text-muted-foreground">{sub}</p>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
-
-interface DeadlineItem {
-  id: string;
-  type: string;
-  diff: number;
-  dateToTrack: Date;
-  projectName: string;
-  projectId: string;
-  typeLabel: string;
-}
-
-function DeadlineRadarCalendar({ deadlineItems }: { deadlineItems: DeadlineItem[] }) {
-  const today = new Date();
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-
-  const calendarDays = useMemo(() => {
-    const firstDay = new Date(viewYear, viewMonth, 1);
-    const lastDay = new Date(viewYear, viewMonth + 1, 0);
-    const startOffset = firstDay.getDay();
-    const daysInMonth = lastDay.getDate();
-
-    const prevMonthLast = new Date(viewYear, viewMonth, 0).getDate();
-    const days: Array<{ day: number; inMonth: boolean; date: Date }> = [];
-
-    for (let i = startOffset - 1; i >= 0; i--) {
-      const d = prevMonthLast - i;
-      days.push({ day: d, inMonth: false, date: new Date(viewYear, viewMonth - 1, d) });
-    }
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push({ day: i, inMonth: true, date: new Date(viewYear, viewMonth, i) });
-    }
-    const remaining = 42 - days.length;
-    for (let i = 1; i <= remaining; i++) {
-      days.push({ day: i, inMonth: false, date: new Date(viewYear, viewMonth + 1, i) });
-    }
-    return days;
-  }, [viewMonth, viewYear]);
-
-  const deadlinesByDate = useMemo(() => {
-    const map = new Map<string, DeadlineItem[]>();
-    deadlineItems.forEach((item) => {
-      const key = `${item.dateToTrack.getFullYear()}-${item.dateToTrack.getMonth()}-${item.dateToTrack.getDate()}`;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(item);
-    });
-    return map;
-  }, [deadlineItems]);
-
-  const getDeadlinesForDay = (date: Date) => {
-    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-    return deadlinesByDate.get(key) || [];
-  };
-
-  const isToday = (date: Date) =>
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear();
-
-  const prevMonth = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear(viewYear - 1); }
-    else setViewMonth(viewMonth - 1);
-  };
-  const nextMonth = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear(viewYear + 1); }
-    else setViewMonth(viewMonth + 1);
-  };
-
-  return (
-    <Card className="border-card-border rounded-xl" data-testid="deadline-radar-calendar">
-      <div className="px-5 py-4 border-b flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-            <Target size={14} className="text-muted-foreground" />
-          </div>
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-widest">
-              Deadline Radar
-            </h3>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">
-              Active action items
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <button onClick={prevMonth} className="p-1 rounded hover:bg-muted transition-colors" data-testid="button-prev-month">
-            <ChevronLeft size={14} className="text-muted-foreground" />
-          </button>
-          <span className="text-[11px] font-bold min-w-[100px] text-center">
-            {MONTH_NAMES[viewMonth]} {viewYear}
-          </span>
-          <button onClick={nextMonth} className="p-1 rounded hover:bg-muted transition-colors" data-testid="button-next-month">
-            <ChevronRight size={14} className="text-muted-foreground" />
-          </button>
-        </div>
-      </div>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-7 mb-1">
-          {DAY_NAMES.map((d) => (
-            <div key={d} className="text-center text-[9px] font-bold text-muted-foreground uppercase tracking-wider py-1">
-              {d}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7">
-          {calendarDays.map((cell, i) => {
-            const deadlines = getDeadlinesForDay(cell.date);
-            const todayCell = isToday(cell.date);
-            return (
-              <div
-                key={i}
-                className={`relative py-1 text-center min-h-[40px] flex flex-col items-center ${
-                  !cell.inMonth ? "opacity-30" : ""
-                }`}
-              >
-                <span
-                  className={`text-[11px] w-6 h-6 flex items-center justify-center rounded-full font-semibold ${
-                    todayCell
-                      ? "bg-[#2d3a4e] text-white font-black"
-                      : ""
-                  }`}
-                >
-                  {cell.day}
-                </span>
-                {deadlines.length > 0 && (
-                  <div className="flex flex-col gap-0.5 mt-0.5 w-full px-0.5">
-                    {deadlines.slice(0, 2).map((dl) => (
-                      <Link key={dl.id} href={`/projects/${dl.projectId}`}>
-                        <div
-                          className={`text-[6px] font-bold px-1 py-0.5 rounded truncate cursor-pointer leading-tight ${
-                            dl.diff < 0
-                              ? "bg-red-200/60 text-red-800"
-                              : dl.diff <= 7
-                              ? "bg-[#c4917a]/25 text-[#8b5e3c]"
-                              : "bg-[#8fa5b8]/20 text-[#4a6a82]"
-                          }`}
-                          title={`${dl.typeLabel}: ${dl.projectName}`}
-                          data-testid={`link-deadline-${dl.id}`}
-                        >
-                          {dl.typeLabel === "Permit Expiration" ? "Expir" : "Target"}
-                        </div>
-                      </Link>
-                    ))}
-                    {deadlines.length > 2 && (
-                      <span className="text-[6px] text-muted-foreground text-center">
-                        +{deadlines.length - 2}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
   );
 }
