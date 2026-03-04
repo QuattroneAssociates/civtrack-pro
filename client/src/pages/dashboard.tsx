@@ -14,7 +14,29 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { X } from "lucide-react";
+
+const DISMISSED_KEY = "civtrack-dismissed-radar";
+
+function getDismissedIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
 
 export default function Dashboard() {
   const { data: projects = [], isLoading: pLoading } = useQuery<Project[]>({
@@ -28,6 +50,26 @@ export default function Dashboard() {
   });
 
   const isLoading = pLoading || perLoading || tLoading;
+
+  const [dismissedIds, setDismissedIds] = useState<string[]>(getDismissedIds);
+  const [dismissTarget, setDismissTarget] = useState<{ id: string; projectName: string } | null>(null);
+
+  const handleDismiss = useCallback((id: string, projectName: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDismissTarget({ id, projectName });
+  }, []);
+
+  const confirmDismiss = useCallback(() => {
+    if (!dismissTarget) return;
+    setDismissedIds((prev) => {
+      if (prev.includes(dismissTarget.id)) return prev;
+      const updated = [...prev, dismissTarget.id];
+      localStorage.setItem(DISMISSED_KEY, JSON.stringify(updated));
+      return updated;
+    });
+    setDismissTarget(null);
+  }, [dismissTarget]);
 
   const stats = useMemo(() => {
     const activeCount = projects.filter(
@@ -103,6 +145,7 @@ export default function Dashboard() {
         };
       })
       .filter(Boolean)
+      .filter((item) => !dismissedIds.includes(item!.id))
       .sort((a, b) => a!.diff - b!.diff)
       .slice(0, 7) as Array<{
       id: string;
@@ -114,7 +157,7 @@ export default function Dashboard() {
       isExpiration: boolean;
       displayDate: string;
     }>;
-  }, [permits, projects]);
+  }, [permits, projects, dismissedIds]);
 
   const recentProjects = useMemo(() => {
     return projects
@@ -263,28 +306,38 @@ export default function Dashboard() {
                 {deadlineRadar.map((item) => (
                   <Link key={item.id} href={`/projects/${item.projectId}`}>
                     <div
-                      className="px-5 py-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                      className="px-5 py-3 cursor-pointer hover:bg-muted/30 transition-colors group"
                       data-testid={`radar-item-${item.id}`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-bold truncate flex-1">
                           {item.projectName}
                         </span>
-                        <span
-                          className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                            item.diff < 0
-                              ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
-                              : item.diff <= 7
-                              ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                              : "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300"
-                          }`}
-                        >
-                          {item.diff < 0
-                            ? `${Math.abs(item.diff)}d overdue`
-                            : item.diff === 0
-                            ? "Today"
-                            : `${item.diff}d`}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                              item.diff < 0
+                                ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
+                                : item.diff <= 7
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                                : "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300"
+                            }`}
+                          >
+                            {item.diff < 0
+                              ? `${Math.abs(item.diff)}d overdue`
+                              : item.diff === 0
+                              ? "Today"
+                              : `${item.diff}d`}
+                          </span>
+                          <button
+                            onClick={(e) => handleDismiss(item.id, item.projectName, e)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                            data-testid={`dismiss-radar-${item.id}`}
+                            title="Dismiss from radar"
+                          >
+                            <X size={12} className="text-muted-foreground" />
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -312,6 +365,23 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!dismissTarget} onOpenChange={(open) => !open && setDismissTarget(null)}>
+        <AlertDialogContent data-testid="dismiss-confirm-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Dismiss from Deadline Radar?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to dismiss <span className="font-semibold text-foreground">{dismissTarget?.projectName}</span> from the Deadline Radar? It will no longer appear in this list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="dismiss-cancel-btn">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDismiss} data-testid="dismiss-confirm-btn">
+              Dismiss
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
