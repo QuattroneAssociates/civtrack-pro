@@ -65,7 +65,7 @@ export default function TasksList() {
     return filtered;
   }, [tasks, viewMode, assigneeFilter]);
 
-  const STATUSES = ["Pending", "Assigned", "In Progress", "Complete"];
+  const STATUSES = ["Assigned", "In Progress", "Complete"];
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -84,14 +84,14 @@ export default function TasksList() {
   const boardColumns = useMemo(() => {
     if (viewMode !== "board") return {};
     const cols: Record<string, Task[]> = {
-      Pending: [],
       Assigned: [],
       "In Progress": [],
       Complete: [],
     };
     filteredTasks.forEach((t) => {
-      let status = t.status || "Pending";
+      let status = t.status || "Assigned";
       if (status === "Completed") status = "Complete";
+      if (status === "Pending") status = "Assigned";
       if (!cols[status]) cols[status] = [];
       cols[status].push(t);
     });
@@ -168,7 +168,7 @@ export default function TasksList() {
       </div>
 
       {viewMode === "board" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Object.entries(boardColumns).map(([status, columnTasks]) => (
             <div key={status}>
               <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
@@ -258,7 +258,6 @@ export default function TasksList() {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  Pending: "bg-amber-100 text-amber-800 border-amber-200",
   Assigned: "bg-blue-100 text-blue-800 border-blue-200",
   "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
   Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -290,7 +289,7 @@ function StatusDropdown({
   }, [open]);
 
   const displayStatus = currentStatus === "Completed" ? "Complete" : currentStatus;
-  const colorClass = STATUS_COLORS[currentStatus] || STATUS_COLORS["Pending"];
+  const colorClass = STATUS_COLORS[currentStatus] || STATUS_COLORS["Assigned"];
 
   return (
     <div className="relative" ref={ref}>

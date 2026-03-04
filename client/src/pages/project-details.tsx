@@ -735,7 +735,7 @@ function TaskSection({
     },
   });
 
-  const STATUSES = ["Pending", "Assigned", "In Progress", "Complete"];
+  const STATUSES = ["Assigned", "In Progress", "Complete"];
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -916,7 +916,6 @@ function TaskSection({
 }
 
 const TASK_STATUS_COLORS: Record<string, string> = {
-  Pending: "bg-amber-100 text-amber-800 border-amber-200",
   Assigned: "bg-blue-100 text-blue-800 border-blue-200",
   "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
   Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -948,7 +947,7 @@ function TaskStatusDropdown({
   }, [open]);
 
   const displayStatus = currentStatus === "Completed" ? "Complete" : currentStatus;
-  const colorClass = TASK_STATUS_COLORS[currentStatus] || TASK_STATUS_COLORS["Pending"];
+  const colorClass = TASK_STATUS_COLORS[currentStatus] || TASK_STATUS_COLORS["Assigned"];
 
   return (
     <div className="relative" ref={ref}>
