@@ -14,7 +14,6 @@ export default function LoginPage() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [returnedCode, setReturnedCode] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cooldown, setCooldown] = useState(false);
 
@@ -23,9 +22,7 @@ export default function LoginPage() {
     if (!email.trim()) return;
     setIsSubmitting(true);
     try {
-      const otpCode = await requestCode(email.trim());
-      setReturnedCode(otpCode);
-      if (otpCode) setCode(otpCode);
+      await requestCode(email.trim());
       setStep("code");
     } catch (err: any) {
       const msg = err.message?.includes("403")
@@ -58,9 +55,8 @@ export default function LoginPage() {
     if (cooldown) return;
     setCooldown(true);
     try {
-      const otpCode = await requestCode(email.trim());
-      setReturnedCode(otpCode);
-      if (otpCode) setCode(otpCode);
+      await requestCode(email.trim());
+      toast({ title: "Code Resent", description: "A new code has been sent to your email." });
     } catch {
       toast({ title: "Error", description: "Failed to resend code.", variant: "destructive" });
     }
@@ -125,12 +121,6 @@ export default function LoginPage() {
             </form>
           ) : (
             <form onSubmit={handleVerify} className="space-y-5">
-              {returnedCode && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center" data-testid="display-code">
-                  <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2">Your Access Code</p>
-                  <p className="text-3xl font-black tracking-[0.3em] text-[#263042]">{returnedCode}</p>
-                </div>
-              )}
               <div className="text-center mb-2">
                 <p className="text-sm text-gray-600">
                   Enter the code to sign in as
@@ -175,7 +165,6 @@ export default function LoginPage() {
                   onClick={() => {
                     setStep("email");
                     setCode("");
-                    setReturnedCode(null);
                   }}
                   className="flex items-center gap-1 text-gray-500 hover:text-[#263042] transition-colors"
                   data-testid="button-back"

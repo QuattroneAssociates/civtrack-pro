@@ -68,7 +68,30 @@ export function setupAuth(app: Express) {
       used: false,
     });
 
-    res.json({ message: "Code sent to your email", code });
+    try {
+      await resend.emails.send({
+        from: "CivTrack Pro <onboarding@resend.dev>",
+        to: normalizedEmail,
+        subject: "Your CivTrack Pro Access Code",
+        html: `
+          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; text-align: center; padding: 40px; background-color: #f9f9f9;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; border: 1px solid #e0e0e0;">
+              <h1 style="color: #1a1a1a; margin-bottom: 30px; font-size: 24px;">Quattrone &amp; Associates, Inc.</h1>
+              <h2 style="color: #333; margin-bottom: 10px;">Your Access Code</h2>
+              <p style="color: #666; font-size: 16px; margin-bottom: 25px;">Use the following code to sign in to CivTrack Pro.</p>
+              <div style="background-color: #f4f4f4; padding: 20px; border-radius: 4px; display: inline-block;">
+                <h1 style="font-size: 48px; font-weight: bold; color: #1a1a1a; letter-spacing: 5px; margin: 0;">${code}</h1>
+              </div>
+              <p style="color: #999; font-size: 12px; margin-top: 30px;">This code expires in 10 minutes.<br/>&copy; 2026 Quattrone &amp; Associates, Inc. All rights reserved.</p>
+            </div>
+          </div>
+        `,
+      });
+    } catch (emailErr) {
+      console.error("Failed to send OTP email:", emailErr);
+    }
+
+    res.json({ message: "Code sent to your email" });
   });
 
   app.post("/api/auth/verify-code", async (req: Request, res: Response) => {
