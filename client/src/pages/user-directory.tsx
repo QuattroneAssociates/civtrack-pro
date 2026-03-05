@@ -1,6 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
-import { USER_ROLES } from "@/lib/constants";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +15,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+const AUTH_ROLE_MAP: Record<string, string> = {
+  admin: "Admin",
+  project_manager: "Project Manager",
+  team_member: "Team Member",
+};
+
 export default function UserDirectory() {
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
@@ -26,7 +31,7 @@ export default function UserDirectory() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "Engineer",
+    role: "team_member",
     isActive: true,
   });
 
@@ -58,22 +63,28 @@ export default function UserDirectory() {
       setFormData({
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: user.authRole || "team_member",
         isActive: user.isActive,
       });
     } else {
       setEditingUser(null);
-      setFormData({ name: "", email: "", role: "Engineer", isActive: true });
+      setFormData({ name: "", email: "", role: "team_member", isActive: true });
     }
     setShowModal(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const submitData = {
+      name: formData.name,
+      email: formData.email,
+      authRole: formData.role,
+      isActive: formData.isActive,
+    };
     if (editingUser) {
-      updateMutation.mutate(formData);
+      updateMutation.mutate(submitData);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(submitData);
     }
   };
 
@@ -189,11 +200,9 @@ export default function UserDirectory() {
                     className="w-full px-3 py-2 rounded-md border bg-background dark:bg-card text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
                     data-testid="select-user-role"
                   >
-                    {USER_ROLES.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
+                    <option value="admin">Admin</option>
+                    <option value="project_manager">Project Manager</option>
+                    <option value="team_member">Team Member</option>
                   </select>
                 </div>
                 <div>
@@ -274,13 +283,9 @@ function UserCard({
     .toUpperCase();
 
   const roleColors: Record<string, string> = {
-    "Application Owner": "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-    "Project Manager": "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-    Engineer: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
-    "Associate Engineer": "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300",
-    Designer: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
-    Planner: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300",
-    "Office Manager": "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300",
+    admin: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+    project_manager: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+    team_member: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
   };
 
   return (
@@ -294,10 +299,10 @@ function UserCard({
             <p className="text-sm font-bold truncate">{user.name}</p>
             <span
               className={`inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mt-0.5 ${
-                roleColors[user.role] || "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60"
+                roleColors[user.authRole || ""] || "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60"
               }`}
             >
-              {user.role}
+              {AUTH_ROLE_MAP[user.authRole || ""] || user.role}
             </span>
             <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
               <Mail size={10} />

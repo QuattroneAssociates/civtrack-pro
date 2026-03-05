@@ -85,11 +85,7 @@ export const NOTE_TYPES = [
 ];
 
 export const USER_ROLES = [
-  "Application Owner",
+  "Admin",
   "Project Manager",
-  "Associate Engineer",
-  "Engineer",
-  "Planner",
-  "Designer",
-  "Office Manager",
+  "Team Member",
 ];
