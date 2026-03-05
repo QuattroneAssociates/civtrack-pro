@@ -103,19 +103,40 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         } hidden md:flex flex-shrink-0 bg-sidebar text-sidebar-foreground flex-col transition-all duration-300 ease-in-out`}
         data-testid="sidebar"
       >
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/5">
-          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-            <HardHat size={18} className="text-white/80" />
-          </div>
-          {sidebarOpen && (
-            <div className="min-w-0">
-              <h1 className="text-[13px] font-black tracking-tight leading-none truncate text-white">
-                CIVTRACK
-              </h1>
-              <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.15em] mt-0.5">
-                PRO
-              </p>
+        <div className="flex items-center justify-between px-4 py-5 border-b border-white/5">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+              <HardHat size={18} className="text-white/80" />
             </div>
+            {sidebarOpen && (
+              <div className="min-w-0">
+                <h1 className="text-[13px] font-black tracking-tight leading-none truncate text-white">
+                  CIVTRACK
+                </h1>
+                <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.15em] mt-0.5">
+                  PRO
+                </p>
+              </div>
+            )}
+          </div>
+          {sidebarOpen ? (
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1 rounded-md text-white/20 hover:text-white/60 hover:bg-white/5 transition-colors flex-shrink-0"
+              title="Collapse sidebar"
+              data-testid="button-sidebar-toggle"
+            >
+              <PanelLeftClose size={14} />
+            </button>
+          ) : (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1 rounded-md text-white/20 hover:text-white/60 hover:bg-white/5 transition-colors flex-shrink-0"
+              title="Expand sidebar"
+              data-testid="button-sidebar-toggle"
+            >
+              <PanelLeftOpen size={14} />
+            </button>
           )}
         </div>
 
@@ -158,7 +179,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="px-2 py-3 border-t border-white/5 space-y-2">
+        <div className="px-2 py-3 border-t border-white/5">
           {sidebarOpen ? (
             <div className="px-3 py-2">
               <div className="flex items-center gap-2">
@@ -195,16 +216,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </button>
             </div>
           )}
-          <div className={`flex ${sidebarOpen ? "justify-end px-3" : "justify-center"}`}>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-md text-white/20 hover:text-white/60 hover:bg-white/5 transition-colors"
-              title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-              data-testid="button-sidebar-toggle"
-            >
-              {sidebarOpen ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
-            </button>
-          </div>
         </div>
       </aside>
 
