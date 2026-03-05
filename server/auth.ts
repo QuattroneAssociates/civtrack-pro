@@ -21,12 +21,15 @@ export function setupAuth(app: Express) {
     ssl: process.env.SUPABASE_DATABASE_URL ? { rejectUnauthorized: false } : undefined,
   });
 
+  app.set("trust proxy", 1);
+
   app.use(
     session({
       store: new PgStore({ pool, tableName: "session" }),
       secret: process.env.SESSION_SECRET!,
       resave: false,
       saveUninitialized: false,
+      proxy: true,
       cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
@@ -58,13 +61,16 @@ export function setupAuth(app: Express) {
 
     req.session.userId = user.id;
 
-    res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      loginEmail: user.loginEmail,
-      authRole: user.authRole,
-      role: user.role,
+    req.session.save((err) => {
+      if (err) return res.status(500).json({ message: "Session save failed" });
+      res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        loginEmail: user.loginEmail,
+        authRole: user.authRole,
+        role: user.role,
+      });
     });
   });
 
