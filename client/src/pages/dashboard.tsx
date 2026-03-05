@@ -310,10 +310,10 @@ export default function Dashboard() {
                 {deadlineRadar.slice(0, 8).map((item) => {
                   const urgencyClass =
                     item.diff < 0
-                      ? "text-red-600 bg-red-50 border-red-200"
+                      ? "text-[#8b4a3a] bg-[#f3e0d8] border-[#e8cfc5]"
                       : item.diff <= 7
-                      ? "text-amber-700 bg-amber-50 border-amber-200"
-                      : "text-slate-600 bg-slate-50 border-slate-200";
+                      ? "text-[#7a5835] bg-[#f0e9dd] border-[#e4d9c8]"
+                      : "text-[#4a5a6a] bg-[#e3e8ed] border-[#d0d8e2]";
                   const diffLabel =
                     item.diff < 0
                       ? `${Math.abs(item.diff)}d overdue`

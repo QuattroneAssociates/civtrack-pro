@@ -95,7 +95,7 @@ export default function ProjectDetails() {
             </span>
             <StatusBadge status={project.status} />
             {project.ballInCourt && (
-              <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-full">
+              <span className="text-[9px] font-bold text-[#7a5835] dark:text-[#c4917a] uppercase tracking-wider bg-[#f0e9dd] dark:bg-[#7a5835]/20 px-2 py-0.5 rounded-full">
                 BIC: {project.ballInCourt}
               </span>
             )}
@@ -188,7 +188,7 @@ export default function ProjectDetails() {
                       label="Address"
                       value={project.address}
                     />
-                    <div className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400">
+                    <div className="text-[10px] font-mono font-bold text-[#7a5835] dark:text-[#c4917a]">
                       Strap: {project.strapNumber}
                     </div>
                   </div>
@@ -911,10 +911,10 @@ function TaskSection({
 }
 
 const TASK_STATUS_COLORS: Record<string, string> = {
-  Assigned: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
-  "In Progress": "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800",
-  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
-  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
+  Assigned: "bg-[#e3e8ed] text-[#3d5068] border-[#d0d8e2] dark:bg-[#3d5068]/25 dark:text-[#8fa5b8] dark:border-[#3d5068]/40",
+  "In Progress": "bg-[#e8eaef] text-[#2e3a50] border-[#d0d4dd] dark:bg-[#2e3a50]/25 dark:text-[#a8b4c8] dark:border-[#2e3a50]/40",
+  Complete: "bg-[#e6ece3] text-[#4a6340] border-[#d2dece] dark:bg-[#4a6340]/25 dark:text-[#96b088] dark:border-[#4a6340]/40",
+  Completed: "bg-[#e6ece3] text-[#4a6340] border-[#d2dece] dark:bg-[#4a6340]/25 dark:text-[#96b088] dark:border-[#4a6340]/40",
 };
 
 function TaskStatusDropdown({
@@ -983,9 +983,9 @@ function TaskStatusDropdown({
 }
 
 const TASK_PRIORITY_COLORS: Record<string, string> = {
-  High: "text-rose-600",
-  Medium: "text-amber-500",
-  Low: "text-slate-400",
+  High: "text-[#8b4a3a]",
+  Medium: "text-[#7a6540]",
+  Low: "text-[#9a9590]",
 };
 
 function TaskPriorityDropdown({

@@ -1,26 +1,26 @@
 import { cn } from "@/lib/utils";
 
 const statusStyles: Record<string, string> = {
-  Active: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+  Active: "bg-[#e8eaef] text-[#2e3a50] dark:bg-[#2e3a50]/30 dark:text-[#a8b4c8]",
   "Active Priority":
-    "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 animate-pulse",
-  Closed: "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60",
+    "bg-[#f3e0d8] text-[#8b4a3a] dark:bg-[#8b4a3a]/20 dark:text-[#d4a090] animate-pulse",
+  Closed: "bg-[#eae8e5] text-[#7a7570] dark:bg-[#7a7570]/15 dark:text-[#b0aaa5]",
   Construction:
-    "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+    "bg-[#e6ece3] text-[#4a6340] dark:bg-[#4a6340]/20 dark:text-[#96b088]",
   "On Hold":
-    "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+    "bg-[#f0e9dd] text-[#7a6540] dark:bg-[#7a6540]/20 dark:text-[#c4a878]",
   Proposal:
-    "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
+    "bg-[#ede6e0] text-[#6b5545] dark:bg-[#6b5545]/20 dark:text-[#bfa08a]",
   "CO Issued":
-    "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300",
+    "bg-[#e3e8ed] text-[#4a5a6a] dark:bg-[#4a5a6a]/20 dark:text-[#8fa5b8]",
 };
 
 export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border",
-        statusStyles[status] || "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60"
+        "inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-transparent",
+        statusStyles[status] || "bg-[#eae8e5] text-[#7a7570] dark:bg-[#7a7570]/15 dark:text-[#b0aaa5]"
       )}
       data-testid={`badge-status-${status.toLowerCase().replace(/\s/g, "-")}`}
     >
@@ -30,17 +30,17 @@ export function StatusBadge({ status }: { status: string }) {
 }
 
 const appStatusStyles: Record<string, string> = {
-  "Not Started": "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60",
-  "In Preparation": "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300",
-  "Under Agency Review": "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-  "Comments Received": "bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300",
-  "Resubmittal Under Review": "bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300",
-  "Fees Posted - Unpaid": "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300",
-  "Fees Posted - Paid": "bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300",
-  Approved: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
-  Denied: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300",
-  Withdrawn: "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60",
-  Expired: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+  "Not Started": "bg-[#eae8e5] text-[#7a7570] dark:bg-[#7a7570]/15 dark:text-[#b0aaa5]",
+  "In Preparation": "bg-[#e3e8ed] text-[#3d5068] dark:bg-[#3d5068]/20 dark:text-[#8fa5b8]",
+  "Under Agency Review": "bg-[#f0e9dd] text-[#7a6540] dark:bg-[#7a6540]/20 dark:text-[#c4a878]",
+  "Comments Received": "bg-[#f0e4d6] text-[#7a5835] dark:bg-[#7a5835]/20 dark:text-[#c4917a]",
+  "Resubmittal Under Review": "bg-[#e3e8ed] text-[#4a5a6a] dark:bg-[#4a5a6a]/20 dark:text-[#8fa5b8]",
+  "Fees Posted - Unpaid": "bg-[#f3e0d8] text-[#8b4a3a] dark:bg-[#8b4a3a]/20 dark:text-[#d4a090]",
+  "Fees Posted - Paid": "bg-[#e6ece3] text-[#4a6340] dark:bg-[#4a6340]/20 dark:text-[#96b088]",
+  Approved: "bg-[#e6ece3] text-[#4a6340] dark:bg-[#4a6340]/20 dark:text-[#96b088]",
+  Denied: "bg-[#f3e0d8] text-[#8b3a3a] dark:bg-[#8b3a3a]/20 dark:text-[#d4a090]",
+  Withdrawn: "bg-[#eae8e5] text-[#7a7570] dark:bg-[#7a7570]/15 dark:text-[#b0aaa5]",
+  Expired: "bg-[#f0ddd8] text-[#8b4a3a] dark:bg-[#8b4a3a]/20 dark:text-[#d4a090]",
 };
 
 export function AppStatusBadge({ status }: { status: string | null | undefined }) {
@@ -49,7 +49,7 @@ export function AppStatusBadge({ status }: { status: string | null | undefined }
     <span
       className={cn(
         "inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
-        appStatusStyles[status] || "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60"
+        appStatusStyles[status] || "bg-[#eae8e5] text-[#7a7570] dark:bg-[#7a7570]/15 dark:text-[#b0aaa5]"
       )}
     >
       {status}

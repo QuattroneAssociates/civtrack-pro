@@ -391,12 +391,12 @@ export default function CalendarPage() {
                             key={evt.id}
                             className={`text-[9px] font-bold px-1 py-0.5 rounded truncate ${
                               evt.type === "permit-expiration"
-                                ? "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                                ? "bg-[#f3e0d8] text-[#8b4a3a] dark:bg-[#8b4a3a]/20 dark:text-[#d4a090]"
                                 : evt.isCompleted
-                                ? "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/50 line-through"
+                                ? "bg-[#eae8e5] text-[#7a7570] dark:bg-[#7a7570]/15 dark:text-[#b0aaa5] line-through"
                                 : evt.isImportant
-                                ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                                : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                                ? "bg-[#f0e9dd] text-[#7a5835] dark:bg-[#7a5835]/20 dark:text-[#c4917a]"
+                                : "bg-[#e3e8ed] text-[#3d5068] dark:bg-[#3d5068]/20 dark:text-[#8fa5b8]"
                             }`}
                             title={evt.title}
                             data-testid={`calendar-event-${evt.id}`}
@@ -421,19 +421,19 @@ export default function CalendarPage() {
 
       <div className="flex flex-wrap items-center gap-5 px-1">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800" />
+          <div className="w-3 h-3 rounded bg-[#e3e8ed] dark:bg-[#3d5068]/30 border border-[#d0d8e2] dark:border-[#3d5068]/50" />
           <span className="text-[10px] font-bold text-muted-foreground dark:text-foreground/60 uppercase tracking-wider">
             Active Tasks
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800" />
+          <div className="w-3 h-3 rounded bg-[#f3e0d8] dark:bg-[#8b4a3a]/20 border border-[#e8cfc5] dark:border-[#8b4a3a]/40" />
           <span className="text-[10px] font-bold text-muted-foreground dark:text-foreground/60 uppercase tracking-wider">
             Permit Expirations
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800" />
+          <div className="w-3 h-3 rounded bg-[#f0e9dd] dark:bg-[#7a5835]/20 border border-[#e4d9c8] dark:border-[#7a5835]/40" />
           <span className="text-[10px] font-bold text-muted-foreground dark:text-foreground/60 uppercase tracking-wider">
             High Priority
           </span>

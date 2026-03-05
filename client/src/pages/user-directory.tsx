@@ -283,9 +283,9 @@ function UserCard({
     .toUpperCase();
 
   const roleColors: Record<string, string> = {
-    admin: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-    project_manager: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-    team_member: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+    admin: "bg-[#f0e9dd] text-[#7a5835] dark:bg-[#7a5835]/20 dark:text-[#c4917a]",
+    project_manager: "bg-[#e3e8ed] text-[#3d5068] dark:bg-[#3d5068]/20 dark:text-[#8fa5b8]",
+    team_member: "bg-[#e6ece3] text-[#4a6340] dark:bg-[#4a6340]/20 dark:text-[#96b088]",
   };
 
   return (
