@@ -308,8 +308,8 @@ function BoardCard({
         <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground">
           {project && (
             <Link href={`/projects/${project.id}`}>
-              <span className="truncate max-w-[120px] hover:text-primary transition-colors cursor-pointer" data-testid={`link-task-project-${task.id}`}>
-                {project.name}
+              <span className="truncate max-w-[160px] hover:text-primary transition-colors cursor-pointer" data-testid={`link-task-project-${task.id}`}>
+                {project.number} - {project.name}
               </span>
             </Link>
           )}
@@ -366,9 +366,9 @@ function ListRow({
         <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
           {project && (
             <Link href={`/projects/${project.id}`}>
-              <span className="hover:text-primary transition-colors cursor-pointer truncate max-w-[180px]" data-testid={`link-task-project-${task.id}`}>
+              <span className="hover:text-primary transition-colors cursor-pointer truncate max-w-[240px]" data-testid={`link-task-project-${task.id}`}>
                 <Briefcase size={9} className="inline mr-0.5" />
-                {project.name}
+                {project.number} - {project.name}
               </span>
             </Link>
           )}
