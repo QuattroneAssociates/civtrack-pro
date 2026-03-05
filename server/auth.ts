@@ -17,7 +17,11 @@ declare module "express-session" {
 
 export function setupAuth(app: Express) {
   const PgStore = connectPgSimple(session);
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+  const pool = new pg.Pool({
+    connectionString,
+    ssl: process.env.SUPABASE_DATABASE_URL ? { rejectUnauthorized: false } : undefined,
+  });
 
   app.use(
     session({

@@ -47,11 +47,13 @@ Full-stack civil engineering project management application migrated from a Goog
 - `/users` — Team directory (admin only)
 
 ## Database
-- PostgreSQL via `DATABASE_URL`
+- **Supabase PostgreSQL** via `SUPABASE_DATABASE_URL` (pooler connection, us-west-2 region, port 6543)
+- Falls back to `DATABASE_URL` (Replit PostgreSQL) if `SUPABASE_DATABASE_URL` is not set
+- SSL enabled for Supabase connections (`rejectUnauthorized: false`)
 - Tables: users, projects, permits, tasks, notes, auditLogs, authCodes, session
 - UUID primary keys generated via `gen_random_uuid()`
 - Project delete cascades to permits, tasks, notes
-- Real data: 2,281 projects, 1,377 permits, 103 tasks, 383 notes, 30 users (19 authorized)
+- Real data: 2,281 projects, 1,377 permits, 104 tasks, 383 notes, 30 users (19 authorized)
 
 ## API Pattern
 - `apiRequest(method, url, data)` from `@/lib/queryClient`
@@ -72,7 +74,8 @@ Full-stack civil engineering project management application migrated from a Goog
 - **Dark Mode**: Toggle in user dropdown (desktop) and mobile slide-out menu. Deep charcoal/navy background (`hsl(215 28% 14%)`) with cream content cards (not inverted). Persists to localStorage (`civtrack-theme`). FOUC prevention via inline script in `index.html`. Theme provider: `client/src/lib/theme.tsx`, Tailwind `darkMode: ["class"]`. All form inputs use `dark:bg-card` for cream background in dark mode. Global CSS rules in index.css handle select option backgrounds and input text colors.
 
 ## Secrets
-- `DATABASE_URL` — PostgreSQL connection
+- `SUPABASE_DATABASE_URL` — Supabase PostgreSQL connection (pooler, us-west-2)
+- `DATABASE_URL` — Replit PostgreSQL connection (fallback)
 - `SESSION_SECRET` — Express session encryption
 - `RESEND_API_KEY` — Email OTP delivery via Resend
 
