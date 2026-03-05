@@ -215,12 +215,12 @@ export default function Dashboard() {
               className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg border bg-card hover:shadow-sm transition-all cursor-pointer"
               data-testid={`metric-${s.label.toLowerCase().replace(/\s/g, "-")}`}
             >
-              <div className={`w-7 h-7 rounded-full ${s.color} bg-opacity-10 flex items-center justify-center`}>
-                <s.icon size={13} className="text-foreground/50" />
+              <div className={`w-7 h-7 rounded-full ${s.color} bg-opacity-15 flex items-center justify-center`}>
+                <s.icon size={13} className="text-card-foreground/60" />
               </div>
               <div>
-                <p className="text-lg font-black leading-none tracking-tight">{s.value}</p>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{s.label}</p>
+                <p className="text-lg font-black leading-none tracking-tight text-card-foreground">{s.value}</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-card-foreground/50 mt-0.5">{s.label}</p>
               </div>
             </div>
           </Link>

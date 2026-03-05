@@ -203,7 +203,7 @@ export default function CalendarPage() {
           <h2 className="text-xl font-black tracking-tight uppercase" data-testid="text-calendar-title">
             Calendar
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground dark:text-foreground/50 mt-0.5">
             Task deadlines and permit expirations
           </p>
         </div>
@@ -212,7 +212,7 @@ export default function CalendarPage() {
           <select
             value={selectedUser}
             onChange={(e) => setSelectedUser(e.target.value)}
-            className="px-3 py-1.5 rounded-md text-xs bg-muted border-0 font-bold"
+            className="px-3 py-1.5 rounded-md text-xs bg-muted dark:bg-white/10 dark:text-foreground border-0 font-bold"
             data-testid="select-calendar-user"
           >
             <option value="All">All Personnel</option>
@@ -422,26 +422,26 @@ export default function CalendarPage() {
       <div className="flex flex-wrap items-center gap-5 px-1">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-muted-foreground dark:text-foreground/60 uppercase tracking-wider">
             Active Tasks
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-muted-foreground dark:text-foreground/60 uppercase tracking-wider">
             Permit Expirations
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800" />
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-muted-foreground dark:text-foreground/60 uppercase tracking-wider">
             High Priority
           </span>
         </div>
         {canCreateTasks && (
           <div className="flex items-center gap-1.5">
-            <Plus size={12} className="text-muted-foreground" />
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+            <Plus size={12} className="text-muted-foreground dark:text-foreground/60" />
+            <span className="text-[10px] font-bold text-muted-foreground dark:text-foreground/60 uppercase tracking-wider">
               Click a day to add a task
             </span>
           </div>

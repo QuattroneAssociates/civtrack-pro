@@ -114,7 +114,7 @@ export default function ProjectsList() {
           <h2 className="text-xl font-black tracking-tight uppercase" data-testid="text-projects-title">
             Projects
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground dark:text-foreground/50 mt-0.5">
             {filteredProjects.length} of {projects.length} records
           </p>
         </div>
@@ -146,7 +146,7 @@ export default function ProjectsList() {
             className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
               statusFilter === status
                 ? "bg-foreground text-background"
-                : "bg-muted text-muted-foreground hover:text-foreground"
+                : "bg-muted dark:bg-white/10 text-muted-foreground dark:text-foreground/50 hover:text-foreground"
             }`}
             data-testid={`filter-${status.toLowerCase().replace(/\s/g, "-")}`}
           >
@@ -157,7 +157,7 @@ export default function ProjectsList() {
         <select
           value={pmFilter}
           onChange={(e) => setPmFilter(e.target.value)}
-          className="ml-auto px-3 py-1.5 rounded-md text-xs bg-muted border-0 font-bold"
+          className="ml-auto px-3 py-1.5 rounded-md text-xs bg-muted dark:bg-white/10 dark:text-foreground border-0 font-bold"
           data-testid="select-pm-filter"
         >
           <option value="All">All PMs</option>
@@ -246,7 +246,7 @@ export default function ProjectsList() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <p className="text-[10px] font-bold text-muted-foreground dark:text-foreground/50 uppercase tracking-wider">
             Page {currentPage} of {totalPages}
           </p>
           <div className="flex items-center gap-1">

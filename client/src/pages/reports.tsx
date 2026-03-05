@@ -232,7 +232,7 @@ export default function Reports() {
         <h2 className="text-xl font-black tracking-tight uppercase" data-testid="text-reports-title">
           Reports
         </h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p className="text-xs text-muted-foreground dark:text-foreground/50 mt-0.5">
           Portfolio analytics and insights
         </p>
       </div>

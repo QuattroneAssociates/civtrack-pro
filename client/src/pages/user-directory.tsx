@@ -100,7 +100,7 @@ export default function UserDirectory() {
           <h2 className="text-xl font-black tracking-tight uppercase" data-testid="text-users-title">
             Team Directory
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground dark:text-foreground/50 mt-0.5">
             {activeUsers.length} active members
           </p>
         </div>
@@ -117,7 +117,7 @@ export default function UserDirectory() {
 
       {inactiveUsers.length > 0 && (
         <div>
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground dark:text-foreground/50 mb-3">
             Inactive Members ({inactiveUsers.length})
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 opacity-60">

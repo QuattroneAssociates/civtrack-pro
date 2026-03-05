@@ -164,7 +164,7 @@ export default function TasksList() {
           <h2 className="text-xl font-black tracking-tight uppercase" data-testid="text-tasks-title">
             Tasks
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground dark:text-foreground/50 mt-0.5">
             {counts.active} active, {counts.archived} archived
           </p>
         </div>
@@ -173,7 +173,7 @@ export default function TasksList() {
           <select
             value={effectiveFilter}
             onChange={(e) => setAssigneeFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-md text-xs bg-muted border-0 font-bold"
+            className="px-3 py-1.5 rounded-md text-xs bg-muted dark:bg-white/10 dark:text-foreground border-0 font-bold"
             data-testid="select-assignee-filter"
           >
             <option value="All">All Personnel</option>
@@ -198,7 +198,7 @@ export default function TasksList() {
                 className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors ${
                   viewMode === mode
                     ? "bg-foreground text-background"
-                    : "bg-background text-muted-foreground hover:text-foreground"
+                    : "bg-background text-muted-foreground dark:text-foreground/50 hover:text-foreground"
                 }`}
                 data-testid={`button-view-${mode}`}
               >
@@ -214,9 +214,9 @@ export default function TasksList() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Object.entries(boardColumns).map(([status, columnTasks]) => (
             <div key={status}>
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground dark:text-foreground/60 mb-2 flex items-center gap-2">
                 {status}
-                <span className="bg-muted px-1.5 py-0.5 rounded text-[9px]">
+                <span className="bg-muted dark:bg-white/10 px-1.5 py-0.5 rounded text-[9px]">
                   {columnTasks.length}
                 </span>
               </h3>
@@ -233,7 +233,7 @@ export default function TasksList() {
                 ))}
                 {columnTasks.length === 0 && (
                   <div className="py-6 text-center border border-dashed rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground dark:text-foreground/40">
                       No tasks
                     </p>
                   </div>

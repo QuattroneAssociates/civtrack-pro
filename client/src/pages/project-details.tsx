@@ -90,7 +90,7 @@ export default function ProjectDetails() {
         </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-mono font-bold text-muted-foreground">
+            <span className="text-xs font-mono font-bold text-muted-foreground dark:text-foreground/60">
               {project.number}
             </span>
             <StatusBadge status={project.status} />
