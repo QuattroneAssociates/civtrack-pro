@@ -24,10 +24,10 @@ const STATUSES = ["Assigned", "In Progress", "Complete"];
 const PRIORITIES = ["High", "Medium", "Low"];
 
 const STATUS_COLORS: Record<string, string> = {
-  Assigned: "bg-blue-100 text-blue-800 border-blue-200",
-  "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
-  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Assigned: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
+  "In Progress": "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800",
+  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
+  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {

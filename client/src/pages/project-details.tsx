@@ -911,10 +911,10 @@ function TaskSection({
 }
 
 const TASK_STATUS_COLORS: Record<string, string> = {
-  Assigned: "bg-blue-100 text-blue-800 border-blue-200",
-  "In Progress": "bg-violet-100 text-violet-800 border-violet-200",
-  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  Assigned: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800",
+  "In Progress": "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800",
+  Complete: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
+  Completed: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
 };
 
 function TaskStatusDropdown({
@@ -1231,7 +1231,7 @@ function NoteSection({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted">
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/70">
                       {note.type}
                     </span>
                     <span className="text-[10px] font-bold text-muted-foreground">

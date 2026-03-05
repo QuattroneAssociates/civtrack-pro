@@ -393,7 +393,7 @@ export default function CalendarPage() {
                               evt.type === "permit-expiration"
                                 ? "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300"
                                 : evt.isCompleted
-                                ? "bg-muted text-muted-foreground line-through"
+                                ? "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/50 line-through"
                                 : evt.isImportant
                                 ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
                                 : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"

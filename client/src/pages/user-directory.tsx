@@ -294,7 +294,7 @@ function UserCard({
             <p className="text-sm font-bold truncate">{user.name}</p>
             <span
               className={`inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mt-0.5 ${
-                roleColors[user.role] || "bg-muted text-muted-foreground"
+                roleColors[user.role] || "bg-muted text-muted-foreground dark:bg-card-foreground/10 dark:text-card-foreground/60"
               }`}
             >
               {user.role}
