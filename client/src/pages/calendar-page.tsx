@@ -288,7 +288,7 @@ export default function CalendarPage() {
                 <select
                   value={newTaskProject}
                   onChange={(e) => setNewTaskProject(e.target.value)}
-                  className="w-full h-9 px-3 rounded-md text-sm bg-background border"
+                  className="w-full h-9 px-3 rounded-md text-sm bg-background dark:bg-card border"
                   data-testid="select-new-task-project"
                 >
                   <option value="">Select project...</option>
@@ -302,7 +302,7 @@ export default function CalendarPage() {
                 <select
                   value={newTaskAssignee}
                   onChange={(e) => setNewTaskAssignee(e.target.value)}
-                  className="w-full h-9 px-3 rounded-md text-sm bg-background border"
+                  className="w-full h-9 px-3 rounded-md text-sm bg-background dark:bg-card border"
                   data-testid="select-new-task-assignee"
                 >
                   <option value="">Select person...</option>

@@ -157,7 +157,7 @@ export default function UserDirectory() {
                       setFormData({ ...formData, name: e.target.value })
                     }
                     required
-                    className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-md border bg-background dark:bg-card text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
                     data-testid="input-user-name"
                   />
                 </div>
@@ -172,7 +172,7 @@ export default function UserDirectory() {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     required
-                    className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-md border bg-background dark:bg-card text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
                     data-testid="input-user-email"
                   />
                 </div>
@@ -186,7 +186,7 @@ export default function UserDirectory() {
                       setFormData({ ...formData, role: e.target.value })
                     }
                     required
-                    className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-md border bg-background dark:bg-card text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
                     data-testid="select-user-role"
                   >
                     {USER_ROLES.map((r) => (

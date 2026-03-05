@@ -289,7 +289,7 @@ function Field({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required={required}
-          className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+          className="w-full px-3 py-2 rounded-md border bg-background dark:bg-card text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
           data-testid={`select-${id}`}
         >
           <option value="">Select...</option>
@@ -304,7 +304,7 @@ function Field({
           onChange={(e) => onChange(e.target.value)}
           required={required}
           rows={3}
-          className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none resize-none"
+          className="w-full px-3 py-2 rounded-md border bg-background dark:bg-card text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none resize-none"
           data-testid={`textarea-${id}`}
         />
       ) : (
@@ -314,7 +314,7 @@ function Field({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required={required}
-          className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
+          className="w-full px-3 py-2 rounded-md border bg-background dark:bg-card text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none"
           data-testid={`input-${id}`}
         />
       )}
