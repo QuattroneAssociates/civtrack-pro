@@ -299,7 +299,7 @@ function BoardCard({
 
   return (
     <div
-      className="flex items-center gap-2.5 px-3 py-2 rounded-md border bg-card hover:shadow-sm transition-all group"
+      className="flex items-center gap-2.5 px-3 py-2 rounded-md border bg-card text-card-foreground hover:shadow-sm transition-all group"
       data-testid={`task-card-${task.id}`}
     >
       <Flag size={11} className={`flex-shrink-0 ${priorityColor}`} />
@@ -354,7 +354,7 @@ function ListRow({
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-2.5 bg-card hover:bg-muted/30 transition-colors ${isComplete ? "opacity-50" : ""}`}
+      className={`flex items-center gap-3 px-4 py-2.5 bg-card text-card-foreground hover:bg-muted/30 transition-colors ${isComplete ? "opacity-50" : ""}`}
       data-testid={`task-card-${task.id}`}
     >
       <Flag size={11} className={`flex-shrink-0 ${priorityColor}`} />
@@ -438,7 +438,7 @@ function TaskActionMenu({
         <MoreVertical size={14} />
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 right-0 bg-card border rounded-lg shadow-lg py-1 min-w-[160px]" data-testid="dropdown-task-actions">
+        <div className="absolute z-50 mt-1 right-0 bg-card text-card-foreground border rounded-lg shadow-lg py-1 min-w-[160px]" data-testid="dropdown-task-actions">
           <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             Status
           </div>

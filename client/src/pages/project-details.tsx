@@ -959,7 +959,7 @@ function TaskStatusDropdown({
         {canToggle && <ChevronDown size={10} />}
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 left-0 bg-card border rounded-md shadow-lg py-1 min-w-[120px]" data-testid="dropdown-status-options">
+        <div className="absolute z-50 mt-1 left-0 bg-card text-card-foreground border rounded-md shadow-lg py-1 min-w-[120px]" data-testid="dropdown-status-options">
           {statuses.map((s) => (
             <button
               key={s}
@@ -1026,7 +1026,7 @@ function TaskPriorityDropdown({
         {canToggle && <ChevronDown size={8} />}
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 right-0 bg-card border rounded-md shadow-lg py-1 min-w-[90px]">
+        <div className="absolute z-50 mt-1 right-0 bg-card text-card-foreground border rounded-md shadow-lg py-1 min-w-[90px]">
           {["High", "Medium", "Low"].map((p) => (
             <button
               key={p}
@@ -1072,7 +1072,7 @@ function TaskRow({
 
   return (
     <div
-      className={`flex items-center gap-3 p-2.5 rounded-md border transition-colors ${
+      className={`flex items-center gap-3 p-2.5 rounded-md border transition-colors text-card-foreground ${
         isComplete ? "bg-muted/30" : "bg-card"
       }`}
       data-testid={`task-row-${task.id}`}

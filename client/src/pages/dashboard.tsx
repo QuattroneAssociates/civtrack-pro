@@ -212,7 +212,7 @@ export default function Dashboard() {
         {statItems.map((s) => (
           <Link key={s.label} href={s.to}>
             <div
-              className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg border bg-card hover:shadow-sm transition-all cursor-pointer"
+              className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg border bg-card text-card-foreground hover:shadow-sm transition-all cursor-pointer"
               data-testid={`metric-${s.label.toLowerCase().replace(/\s/g, "-")}`}
             >
               <div className={`w-7 h-7 rounded-full ${s.color} bg-opacity-15 flex items-center justify-center`}>
