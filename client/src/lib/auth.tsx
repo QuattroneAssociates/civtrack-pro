@@ -13,9 +13,8 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (email: string, code: string) => Promise<AuthUser>;
+  login: (email: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
-  requestCode: (email: string) => Promise<void>;
   hasRole: (...roles: string[]) => boolean;
   isAdmin: boolean;
   isProjectManager: boolean;
@@ -41,14 +40,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const requestCode = useCallback(async (email: string): Promise<void> => {
-    await apiRequest("POST", "/api/auth/request-code", { email });
-  }, []);
-
-  const login = useCallback(async (email: string, code: string) => {
-    const res = await apiRequest("POST", "/api/auth/verify-code", {
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await apiRequest("POST", "/api/auth/login", {
       email,
-      code,
+      password,
     });
     const data = await res.json();
     setUser(data);
@@ -76,7 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         logout,
-        requestCode,
         hasRole,
         isAdmin: user?.authRole === "admin",
         isProjectManager: user?.authRole === "project_manager",

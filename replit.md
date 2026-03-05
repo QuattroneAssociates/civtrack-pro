@@ -10,12 +10,13 @@ Full-stack civil engineering project management application migrated from a Goog
 - **Auth**: Email OTP login via Resend, express-session with connect-pg-simple, role-based access control
 
 ## Authentication
-- **Login Flow**: Email → 6-digit OTP via Resend → Session-based auth
+- **Login Flow**: Email + password → Session-based auth (bcrypt hashed passwords)
 - **Roles**: admin, project_manager, team_member
-- **19 authorized users** with @qainc.net login emails
+- **19 authorized users** with @qainc.net login emails and unique passwords (pattern: `Qa-FirstName2026!`)
 - **Session**: PostgreSQL-backed via connect-pg-simple (7-day cookie)
 - **Key files**: `server/auth.ts` (routes + middleware), `client/src/lib/auth.tsx` (AuthProvider context), `client/src/pages/login.tsx`
 - **Middleware**: `requireAuth` on all /api/* except /api/auth/*, `requireRole(...)` on write routes
+- **Login route**: `POST /api/auth/login` accepts `{ email, password }`
 - **Permission Matrix**:
   - Admin: Full access (CRUD projects, permits, tasks, notes; see Reports & Team)
   - PM: Read projects, manage tasks/notes, no project CRUD, no Reports/Team
