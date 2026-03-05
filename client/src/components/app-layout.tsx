@@ -13,11 +13,14 @@ import {
   Menu,
   X,
   ChevronDown,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Task, Permit } from "@shared/schema";
 import { parseDateSafe } from "@/lib/dateUtils";
 import { useAuth } from "@/lib/auth";
+import { useTheme } from "@/lib/theme";
 
 const allNavItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard, roles: null, bottomTab: true },
@@ -35,6 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { user, logout, hasRole } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = useMemo(
     () => allNavItems.filter((item) => !item.roles || hasRole(...item.roles)),
@@ -182,6 +186,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </p>
               </div>
               <button
+                onClick={toggleTheme}
+                className="w-full text-left px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                data-testid="button-toggle-theme"
+              >
+                {theme === "light" ? <Moon size={12} /> : <Sun size={12} />}
+                {theme === "light" ? "Dark Mode" : "Light Mode"}
+              </button>
+              <button
                 onClick={logout}
                 className="w-full text-left px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-destructive hover:bg-muted transition-colors flex items-center gap-2"
                 data-testid="button-logout"
@@ -297,8 +309,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <button
+                onClick={toggleTheme}
+                className="mt-3 w-full flex items-center gap-2 px-4 py-2 rounded-md text-white/40 hover:text-white/80 hover:bg-white/5 transition-colors text-[11px] font-bold uppercase tracking-wider"
+                data-testid="mobile-button-toggle-theme"
+              >
+                {theme === "light" ? <Moon size={14} /> : <Sun size={14} />}
+                {theme === "light" ? "Dark Mode" : "Light Mode"}
+              </button>
+              <button
                 onClick={logout}
-                className="mt-3 w-full flex items-center gap-2 px-4 py-2 rounded-md text-white/40 hover:text-rose-300 hover:bg-white/5 transition-colors text-[11px] font-bold uppercase tracking-wider"
+                className="mt-1 w-full flex items-center gap-2 px-4 py-2 rounded-md text-white/40 hover:text-rose-300 hover:bg-white/5 transition-colors text-[11px] font-bold uppercase tracking-wider"
                 data-testid="mobile-button-logout"
               >
                 <LogOut size={14} />

@@ -69,6 +69,7 @@ Full-stack civil engineering project management application migrated from a Goog
 - Dashboard: stat cards with circular icons + accent bars, Recently Submitted permits list, Deadline Radar mini calendar widget
 - Uses shadcn elevation system (`hover-elevate`)
 - Font: Open Sans
+- **Dark Mode**: Toggle in user dropdown (desktop) and mobile slide-out menu. Deep charcoal/navy background (`hsl(215 28% 14%)`) with cream content cards (not inverted). Persists to localStorage (`civtrack-theme`). FOUC prevention via inline script in `index.html`. Theme provider: `client/src/lib/theme.tsx`, Tailwind `darkMode: ["class"]`.
 
 ## Secrets
 - `DATABASE_URL` — PostgreSQL connection
