@@ -603,10 +603,10 @@ function PermitSection({
       )}
 
       {filteredPermits.length > 0 ? (
-        <div className="rounded-lg border border-card-border max-h-[70vh] overflow-auto">
+        <div className="rounded-lg border border-card-border bg-card text-card-foreground max-h-[70vh] overflow-auto">
           <table className="text-[11px] min-w-[800px] w-full" data-testid="permit-table">
             <thead className="sticky top-0 z-10">
-              <tr className="border-b bg-background shadow-[0_1px_0_0_hsl(var(--border))]">
+              <tr className="border-b bg-card shadow-[0_1px_0_0_hsl(var(--border))]">
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[120px]">Type</th>
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[80px]">#</th>
                 <th className="text-left px-2 py-2 font-bold text-[9px] uppercase tracking-wider text-muted-foreground whitespace-nowrap min-w-[65px]">Target</th>
